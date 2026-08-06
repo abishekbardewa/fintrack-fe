@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+dist-ssr/
+coverage/
+.vite/
+.vitest/
+.eslintcache
+*.tsbuildinfo
+
+# Env
+.env
+.env.*
+*.local
+
+# Local / IDE
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Project-local (not for GitHub)
+docs/
+legacy-project/
+designs/
+.cursor/
+*.md
+!README.md
+
+# Deferred tooling
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/

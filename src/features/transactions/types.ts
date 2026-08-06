@@ -1,0 +1,57 @@
+export type TransactionType = 'expense' | 'income';
+
+export interface Transaction {
+	id: string;
+	type: TransactionType;
+	amount: number;
+	currency: string;
+	amountPreferred?: number;
+	categoryId: string;
+	subcategoryId?: string | null;
+	description?: string | null;
+	date: string;
+	createdAt?: string;
+	updatedAt?: string;
+}
+
+export interface TransactionsListData {
+	items: Transaction[];
+	page: number;
+	limit: number;
+	total: number;
+	totalPages: number;
+}
+
+export interface TransactionMutationData {
+	transaction: Transaction;
+}
+
+export interface CreateTransactionRequest {
+	type: TransactionType;
+	amount: number;
+	currency?: string;
+	categoryId: string;
+	subcategoryId?: string | null;
+	description?: string;
+	date: string;
+}
+
+export type UpdateTransactionRequest = Partial<CreateTransactionRequest>;
+
+export interface TransactionListParams {
+	q?: string;
+	type?: TransactionType | '';
+	categoryId?: string;
+	subcategoryId?: string;
+	from?: string;
+	to?: string;
+	minAmount?: number;
+	maxAmount?: number;
+	currency?: string;
+	page?: number;
+	limit?: number;
+}
+
+export interface SuggestDescriptionsData {
+	descriptions: string[];
+}

@@ -1,0 +1,64 @@
+{
+	"name": "fintrack-fe",
+	"private": true,
+	"version": "1.0.1",
+	"description": "FinTrack personal finance tracker frontend",
+	"author": "Abishek Bardewa",
+	"license": "MIT",
+	"type": "module",
+	"engines": {
+		"node": ">=20.19.0",
+		"npm": ">=10.0.0"
+	},
+	"packageManager": "npm@10.9.2",
+	"keywords": [
+		"finance",
+		"expense-tracker",
+		"budgeting",
+		"react",
+		"typescript"
+	],
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc -b && vite build",
+		"preview": "vite preview",
+		"lint": "eslint .",
+		"typecheck": "tsc -b --pretty false",
+		"check": "npm run lint && npm run typecheck && npm run build"
+	},
+	"dependencies": {
+		"@reduxjs/toolkit": "^2.8.2",
+		"@tanstack/react-query": "^5.83.0",
+		"axios": "^1.11.0",
+		"chart.js": "^4.5.0",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^0.525.0",
+		"next-themes": "^0.4.6",
+		"radix-ui": "^1.6.7",
+		"react": "^19.2.8",
+		"react-chartjs-2": "^5.3.0",
+		"react-dom": "^19.2.8",
+		"react-redux": "^9.2.0",
+		"react-router-dom": "^7.18.2",
+		"sonner": "^2.0.7",
+		"tailwind-merge": "^3.3.1",
+		"zod": "^4.0.5"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.32.0",
+		"@tailwindcss/vite": "^4.1.11",
+		"@types/node": "^24.1.0",
+		"@types/react": "^19.2.18",
+		"@types/react-dom": "^19.2.4",
+		"@vitejs/plugin-react": "^6.0.5",
+		"eslint": "^9.32.0",
+		"eslint-plugin-react-hooks": "^7.1.1",
+		"eslint-plugin-react-refresh": "^0.5.3",
+		"globals": "^15.15.0",
+		"tailwindcss": "^4.1.11",
+		"typescript": "^5.9.2",
+		"typescript-eslint": "^8.38.0",
+		"vite": "^8.2.1"
+	}
+}

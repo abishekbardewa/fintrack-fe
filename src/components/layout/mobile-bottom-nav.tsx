@@ -1,0 +1,112 @@
+import { useState } from 'react';
+import { Menu } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+
+import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS } from '@/config/navigation';
+import { Button } from '@/components/ui/button';
+import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetHeader,
+	SheetTitle,
+	SheetTrigger,
+} from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
+
+export function MobileBottomNav() {
+	const [moreOpen, setMoreOpen] = useState(false);
+
+	return (
+		<nav
+			className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 md:hidden"
+			aria-label="Primary navigation"
+			style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+		>
+			<div className="flex h-16 items-stretch justify-around px-1">
+				{PRIMARY_NAV_ITEMS.map((item) => {
+					const Icon = item.icon;
+					return (
+						<NavLink
+							key={item.href}
+							to={item.href}
+							className={({ isActive }) =>
+								cn(
+									'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[10px] font-medium transition-colors',
+									isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+								)
+							}
+						>
+							{({ isActive }) => (
+								<>
+									<span
+										className={cn(
+											'flex size-8 items-center justify-center rounded-full',
+											isActive && 'bg-primary/15',
+										)}
+									>
+										<Icon className="size-5" aria-hidden="true" />
+									</span>
+									<span className="truncate">{item.title}</span>
+								</>
+							)}
+						</NavLink>
+					);
+				})}
+
+				<Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+					<SheetTrigger asChild>
+						<button
+							type="button"
+							className="flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[10px] font-medium text-muted-foreground hover:text-foreground"
+							aria-label="More navigation"
+							data-testid="mobile-more-nav"
+						>
+							<span className="flex size-8 items-center justify-center rounded-full">
+								<Menu className="size-5" aria-hidden="true" />
+							</span>
+							<span>More</span>
+						</button>
+					</SheetTrigger>
+					<SheetContent side="bottom" className="rounded-t-xl pb-8">
+						<SheetHeader>
+							<SheetTitle>More</SheetTitle>
+							<SheetDescription>Categories, trends, and other destinations.</SheetDescription>
+						</SheetHeader>
+						<div className="grid gap-1 px-4">
+							{SECONDARY_NAV_ITEMS.map((item) => {
+								const Icon = item.icon;
+								return (
+									<NavLink
+										key={item.href}
+										to={item.href}
+										onClick={() => setMoreOpen(false)}
+										className={({ isActive }) =>
+											cn(
+												'flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors',
+												isActive ? 'bg-primary/10 text-primary' : 'hover:bg-muted',
+											)
+										}
+									>
+										<Icon className="size-4" aria-hidden="true" />
+										{item.title}
+									</NavLink>
+								);
+							})}
+						</div>
+						<div className="mt-4 flex justify-center px-4">
+							<Button
+								type="button"
+								variant="outline"
+								className="w-full"
+								onClick={() => setMoreOpen(false)}
+							>
+								Close
+							</Button>
+						</div>
+					</SheetContent>
+				</Sheet>
+			</div>
+		</nav>
+	);
+}
