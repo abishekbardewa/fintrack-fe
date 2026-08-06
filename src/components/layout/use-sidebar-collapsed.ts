@@ -14,7 +14,9 @@ export function useSidebarCollapsed() {
 	useEffect(() => {
 		try {
 			window.localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
-		} catch {}
+		} catch {
+			// Ignore quota / private-mode write failures.
+		}
 	}, [collapsed]);
 
 	return [collapsed, setCollapsed] as const;

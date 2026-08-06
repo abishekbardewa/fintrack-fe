@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import { useAppSelector } from '@/app/hooks';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
 	Dialog,
 	DialogContent,
@@ -371,13 +372,13 @@ function TransactionFormFields({
 
 				<div className="grid gap-2">
 					<Label htmlFor="tx-date">Date</Label>
-					<Input
+					<DatePicker
 						id="tx-date"
-						type="date"
 						value={values.date}
-						onChange={(e) => setField('date', e.target.value)}
+						onChange={(v) => setField('date', v)}
 						disabled={pending}
-						aria-invalid={Boolean(errors.date)}
+						invalid={Boolean(errors.date)}
+						aria-label="Transaction date"
 					/>
 					{errors.date ? <p className="text-sm text-destructive">{errors.date}</p> : null}
 				</div>

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { ListFilter, Search, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import {
 	Select,
@@ -228,19 +229,17 @@ export function TransactionFilters({
 					</Select>
 
 					<div className="grid grid-cols-2 gap-2 sm:col-span-2 lg:col-span-1">
-						<Input
-							type="date"
+						<DatePicker
 							value={value.from}
-							onChange={(e) => set('from', e.target.value)}
+							onChange={(v) => set('from', v)}
+							placeholder="From date"
 							aria-label="From date"
-							className="h-9"
 						/>
-						<Input
-							type="date"
+						<DatePicker
 							value={value.to}
-							onChange={(e) => set('to', e.target.value)}
+							onChange={(v) => set('to', v)}
+							placeholder="To date"
 							aria-label="To date"
-							className="h-9"
 						/>
 					</div>
 
