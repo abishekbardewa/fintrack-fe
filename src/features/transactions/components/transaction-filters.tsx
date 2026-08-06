@@ -1,54 +1,98 @@
 import { useMemo, useState } from 'react';
-import { ListFilter, Search, X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 import { useCategoriesQuery } from '@/features/categories/hooks/use-categories';
 import { buildCategoryTree } from '@/features/categories/utils';
 import type { TransactionType } from '@/features/transactions/types';
-import {
-	EMPTY_FILTERS,
-	hasActiveFilters,
-	type TransactionFilterDraft,
-} from '@/features/transactions/utils';
+import type { TransactionFilterDraft } from '@/features/transactions/utils';
 import { SUPPORTED_CURRENCIES } from '@/lib/currencies';
 import { cn } from '@/lib/utils';
+
+const INITIAL_VISIBLE = 8;
+const AMOUNT_MIN = 0;
+const AMOUNT_MAX = 100_000;
+const AMOUNT_STEP = 500;
 
 interface TransactionFiltersProps {
 	value: TransactionFilterDraft;
 	onChange: (next: TransactionFilterDraft) => void;
-	categoryLabels: Map<string, string>;
 }
 
-type FilterChip = {
-	key: string;
+type BadgeOption = {
+	value: string;
 	label: string;
-	clear: Partial<TransactionFilterDraft>;
 };
 
-function advancedFilterCount(value: TransactionFilterDraft) {
-	let count = 0;
-	if (value.subcategoryId) count += 1;
-	if (value.currency) count += 1;
-	if (value.from || value.to) count += 1;
-	if (value.minAmount || value.maxAmount) count += 1;
-	return count;
+function formatAmount(n: number) {
+	return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(n);
 }
 
-export function TransactionFilters({
-	value,
-	onChange,
-	categoryLabels,
-}: TransactionFiltersProps) {
-	const [moreOpen, setMoreOpen] = useState(false);
+function FilterBadgeGroup({
+	options,
+	selected,
+	onSelect,
+	ariaLabel,
+}: {
+	options: BadgeOption[];
+	selected: string;
+	onSelect: (value: string) => void;
+	ariaLabel: string;
+}) {
+	const [expanded, setExpanded] = useState(false);
+	const needsMore = options.length > INITIAL_VISIBLE;
+	const visible = expanded || !needsMore ? options : options.slice(0, INITIAL_VISIBLE);
+
+	return (
+		<div className="grid gap-2" role="group" aria-label={ariaLabel}>
+			<div className="flex flex-wrap gap-1.5">
+				{visible.map((opt) => {
+					const isSelected = selected === opt.value;
+					return (
+						<Badge
+							key={opt.value || '__all__'}
+							asChild
+							variant={isSelected ? 'default' : 'outline'}
+							className={cn(
+								'cursor-pointer px-2.5 py-1 transition-colors',
+								!isSelected && 'hover:bg-accent hover:text-accent-foreground',
+							)}
+						>
+							<button
+								type="button"
+								aria-pressed={isSelected}
+								onClick={() => onSelect(isSelected ? '' : opt.value)}
+							>
+								{opt.label}
+							</button>
+						</Badge>
+					);
+				})}
+			</div>
+			{needsMore ? (
+				<button
+					type="button"
+					className="w-fit text-xs font-medium text-muted-foreground hover:text-foreground"
+					onClick={() => setExpanded((open) => !open)}
+				>
+					{expanded ? 'Show less' : `Show more (${options.length - INITIAL_VISIBLE})`}
+				</button>
+			) : null}
+		</div>
+	);
+}
+
+function parseAmountBound(raw: string, fallback: number) {
+	if (!raw) return fallback;
+	const n = Number(raw);
+	return Number.isFinite(n) ? n : fallback;
+}
+
+export function TransactionFilters({ value, onChange }: TransactionFiltersProps) {
 	const kind = value.type || undefined;
 	const { data } = useCategoriesQuery(kind);
 	const tree = useMemo(
@@ -57,16 +101,31 @@ export function TransactionFilters({
 	);
 	const selectedMain = tree.find((c) => c.id === value.categoryId);
 	const subs = selectedMain?.children ?? [];
-	const moreCount = advancedFilterCount(value);
 
-	const set = <K extends keyof TransactionFilterDraft>(key: K, next: TransactionFilterDraft[K]) => {
-		onChange({ ...value, [key]: next });
-	};
+	const committedRange = useMemo(
+		(): [number, number] => [
+			parseAmountBound(value.minAmount, AMOUNT_MIN),
+			parseAmountBound(value.maxAmount, AMOUNT_MAX),
+		],
+		[value.minAmount, value.maxAmount],
+	);
+	const [draftRange, setDraftRange] = useState<[number, number] | null>(null);
+	const amountRange = draftRange ?? committedRange;
 
-	const handleTypeChange = (type: TransactionType | '') => {
+	const commitAmountRange = (range: [number, number]) => {
+		const [min, max] = range;
 		onChange({
 			...value,
-			type,
+			minAmount: min <= AMOUNT_MIN ? '' : String(min),
+			maxAmount: max >= AMOUNT_MAX ? '' : String(max),
+		});
+		setDraftRange(null);
+	};
+
+	const handleTypeChange = (type: string) => {
+		onChange({
+			...value,
+			type: (type as TransactionType | '') || '',
 			categoryId: '',
 			subcategoryId: '',
 		});
@@ -75,229 +134,152 @@ export function TransactionFilters({
 	const handleCategoryChange = (categoryId: string) => {
 		onChange({
 			...value,
-			categoryId: categoryId === '__all__' ? '' : categoryId,
+			categoryId,
 			subcategoryId: '',
 		});
 	};
 
-	const chips: FilterChip[] = [];
-	if (value.type) {
-		chips.push({
-			key: 'type',
-			label: value.type === 'expense' ? 'Expense' : 'Income',
-			clear: { type: '', categoryId: '', subcategoryId: '' },
-		});
-	}
-	if (value.categoryId) {
-		chips.push({
-			key: 'categoryId',
-			label: categoryLabels.get(value.categoryId) ?? 'Category',
-			clear: { categoryId: '', subcategoryId: '' },
-		});
-	}
-	if (value.subcategoryId) {
-		chips.push({
-			key: 'subcategoryId',
-			label: categoryLabels.get(value.subcategoryId) ?? 'Subcategory',
-			clear: { subcategoryId: '' },
-		});
-	}
-	if (value.currency) {
-		chips.push({
-			key: 'currency',
-			label: value.currency,
-			clear: { currency: '' },
-		});
-	}
-	if (value.from || value.to) {
-		chips.push({
-			key: 'dates',
-			label: `${value.from || '…'} → ${value.to || '…'}`,
-			clear: { from: '', to: '' },
-		});
-	}
-	if (value.minAmount || value.maxAmount) {
-		chips.push({
-			key: 'amount',
-			label: `${value.minAmount || '0'}–${value.maxAmount || '∞'}`,
-			clear: { minAmount: '', maxAmount: '' },
-		});
-	}
+	const typeOptions: BadgeOption[] = [
+		{ value: 'expense', label: 'Expense' },
+		{ value: 'income', label: 'Income' },
+	];
+
+	const categoryOptions: BadgeOption[] = tree.map((c) => ({
+		value: c.id,
+		label: c.name,
+	}));
+
+	const subcategoryOptions: BadgeOption[] = subs.map((c) => ({
+		value: c.id,
+		label: c.name,
+	}));
+
+	const currencyOptions: BadgeOption[] = SUPPORTED_CURRENCIES.map((c) => ({
+		value: c.code,
+		label: c.code,
+	}));
 
 	return (
-		<div className="grid gap-2">
-			<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-				<div className="relative min-w-0 flex-1">
-					<Search
-						className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-						aria-hidden="true"
-					/>
-					<Input
-						value={value.q}
-						onChange={(e) => set('q', e.target.value)}
-						placeholder="Search transactions…"
-						className="h-9 pl-9"
-						aria-label="Search transactions"
-						data-testid="transaction-search"
-					/>
-				</div>
-
-				<div className="flex flex-wrap items-center gap-2">
-					<Select
-						value={value.type || '__all__'}
-						onValueChange={(v) => handleTypeChange(v === '__all__' ? '' : (v as TransactionType))}
-					>
-						<SelectTrigger className="h-9 w-[8.5rem]" aria-label="Filter by type">
-							<SelectValue placeholder="All types" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="__all__">All types</SelectItem>
-							<SelectItem value="expense">Expense</SelectItem>
-							<SelectItem value="income">Income</SelectItem>
-						</SelectContent>
-					</Select>
-
-					<Select value={value.categoryId || '__all__'} onValueChange={handleCategoryChange}>
-						<SelectTrigger className="h-9 w-[10rem]" aria-label="Filter by category">
-							<SelectValue placeholder="Category" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="__all__">All categories</SelectItem>
-							{tree.map((c) => (
-								<SelectItem key={c.id} value={c.id}>
-									{c.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-
-					<Button
-						type="button"
-						variant={moreOpen || moreCount > 0 ? 'secondary' : 'outline'}
-						size="sm"
-						className="h-9 gap-1.5"
-						onClick={() => setMoreOpen((open) => !open)}
-						aria-expanded={moreOpen}
-						data-testid="transaction-filters-more"
-					>
-						<ListFilter className="size-4" />
-						Filters
-						{moreCount > 0 ? (
-							<span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
-								{moreCount}
-							</span>
-						) : null}
-					</Button>
-				</div>
-			</div>
-
-			{moreOpen ? (
-				<div className="grid gap-2 rounded-lg border border-border bg-muted/20 p-3 sm:grid-cols-2 lg:grid-cols-3">
-					<Select
-						value={value.subcategoryId || '__all__'}
-						onValueChange={(v) => set('subcategoryId', v === '__all__' ? '' : v)}
-						disabled={!value.categoryId || subs.length === 0}
-					>
-						<SelectTrigger className="h-9 w-full" aria-label="Filter by subcategory">
-							<SelectValue placeholder="Subcategory" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="__all__">All subcategories</SelectItem>
-							{subs.map((c) => (
-								<SelectItem key={c.id} value={c.id}>
-									{c.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-
-					<Select
-						value={value.currency || '__all__'}
-						onValueChange={(v) => set('currency', v === '__all__' ? '' : v)}
-					>
-						<SelectTrigger className="h-9 w-full" aria-label="Filter by currency">
-							<SelectValue placeholder="Currency" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="__all__">All currencies</SelectItem>
-							{SUPPORTED_CURRENCIES.map((c) => (
-								<SelectItem key={c.code} value={c.code}>
-									{c.code}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-
-					<div className="grid grid-cols-2 gap-2 sm:col-span-2 lg:col-span-1">
-						<DatePicker
-							value={value.from}
-							onChange={(v) => set('from', v)}
-							placeholder="From date"
-							aria-label="From date"
+		<aside
+			className="w-full shrink-0 lg:sticky lg:top-20 lg:w-64 xl:w-72"
+			data-testid="transaction-filters"
+		>
+			<div className="rounded-xl border border-border bg-card p-4 shadow-xs">
+				<div className="grid gap-5">
+					<div className="relative min-w-0">
+						<Search
+							className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+							aria-hidden="true"
 						/>
-						<DatePicker
-							value={value.to}
-							onChange={(v) => set('to', v)}
-							placeholder="To date"
-							aria-label="To date"
+						<Input
+							value={value.q}
+							onChange={(e) => onChange({ ...value, q: e.target.value })}
+							placeholder="Search…"
+							className={cn('h-9 pl-9', value.q && 'pr-9')}
+							aria-label="Search transactions"
+							data-testid="transaction-search"
+						/>
+						{value.q ? (
+							<button
+								type="button"
+								className="absolute top-1/2 right-2.5 flex size-5 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground"
+								onClick={() => onChange({ ...value, q: '' })}
+								aria-label="Clear search"
+								data-testid="transaction-search-clear"
+							>
+								<X className="size-3.5" />
+							</button>
+						) : null}
+					</div>
+
+					<div className="grid gap-2">
+						<Label>Type</Label>
+						<FilterBadgeGroup
+							options={typeOptions}
+							selected={value.type}
+							onSelect={handleTypeChange}
+							ariaLabel="Filter by type"
 						/>
 					</div>
 
-					<Input
-						type="number"
-						inputMode="decimal"
-						min="0"
-						step="any"
-						value={value.minAmount}
-						onChange={(e) => set('minAmount', e.target.value)}
-						placeholder="Min amount"
-						className="h-9 tabular-nums"
-						aria-label="Minimum amount"
-					/>
-					<Input
-						type="number"
-						inputMode="decimal"
-						min="0"
-						step="any"
-						value={value.maxAmount}
-						onChange={(e) => set('maxAmount', e.target.value)}
-						placeholder="Max amount"
-						className="h-9 tabular-nums"
-						aria-label="Maximum amount"
-					/>
-				</div>
-			) : null}
-
-			{chips.length > 0 ? (
-				<div className="flex flex-wrap items-center gap-1.5">
-					{chips.map((chip) => (
-						<button
-							key={chip.key}
-							type="button"
-							onClick={() => onChange({ ...value, ...chip.clear })}
-							className={cn(
-								'inline-flex items-center gap-1 rounded-full border border-border bg-muted/60 px-2 py-0.5 text-xs text-foreground',
-							)}
-						>
-							{chip.label}
-							<X className="size-3 text-muted-foreground" aria-hidden="true" />
-							<span className="sr-only">Remove filter</span>
-						</button>
-					))}
-					{hasActiveFilters(value) ? (
-						<Button
-							type="button"
-							variant="ghost"
-							size="sm"
-							className="h-6 px-2 text-xs text-muted-foreground"
-							onClick={() => onChange(EMPTY_FILTERS)}
-							data-testid="transaction-filters-clear"
-						>
-							Clear
-						</Button>
+					{categoryOptions.length > 0 ? (
+						<div className="grid gap-2">
+							<Label>Category</Label>
+							<FilterBadgeGroup
+								options={categoryOptions}
+								selected={value.categoryId}
+								onSelect={handleCategoryChange}
+								ariaLabel="Filter by category"
+							/>
+						</div>
 					) : null}
+
+					{value.categoryId && subcategoryOptions.length > 0 ? (
+						<div className="grid gap-2">
+							<Label>Subcategory</Label>
+							<FilterBadgeGroup
+								options={subcategoryOptions}
+								selected={value.subcategoryId}
+								onSelect={(subcategoryId) => onChange({ ...value, subcategoryId })}
+								ariaLabel="Filter by subcategory"
+							/>
+						</div>
+					) : null}
+
+					<div className="grid gap-2">
+						<Label>Currency</Label>
+						<FilterBadgeGroup
+							options={currencyOptions}
+							selected={value.currency}
+							onSelect={(currency) => onChange({ ...value, currency })}
+							ariaLabel="Filter by currency"
+						/>
+					</div>
+
+					<div className="grid gap-2">
+						<Label>Date range</Label>
+						<div className="grid gap-2">
+							<DatePicker
+								value={value.from}
+								onChange={(from) => onChange({ ...value, from })}
+								placeholder="From date"
+								aria-label="From date"
+							/>
+							<DatePicker
+								value={value.to}
+								onChange={(to) => onChange({ ...value, to })}
+								placeholder="To date"
+								aria-label="To date"
+							/>
+						</div>
+					</div>
+
+					<div className="grid gap-3">
+						<div className="flex items-center justify-between gap-2">
+							<Label>Amount</Label>
+							<span className="text-xs tabular-nums text-muted-foreground">
+								{formatAmount(amountRange[0])} – {formatAmount(amountRange[1])}
+								{amountRange[1] >= AMOUNT_MAX ? '+' : ''}
+							</span>
+						</div>
+						<Slider
+							min={AMOUNT_MIN}
+							max={AMOUNT_MAX}
+							step={AMOUNT_STEP}
+							value={amountRange}
+							onValueChange={(next) => {
+								const [min, max] = next;
+								setDraftRange([min ?? AMOUNT_MIN, max ?? AMOUNT_MAX]);
+							}}
+							onValueCommit={(next) => {
+								const [min, max] = next;
+								commitAmountRange([min ?? AMOUNT_MIN, max ?? AMOUNT_MAX]);
+							}}
+							aria-label="Filter by amount range"
+						/>
+					</div>
 				</div>
-			) : null}
-		</div>
+			</div>
+		</aside>
 	);
 }
