@@ -29,7 +29,7 @@ interface CategoryKindPanelProps {
 }
 
 export function CategoryKindPanel({ kind }: CategoryKindPanelProps) {
-	const { data, isLoading, isError, refetch, isFetching } = useCategoriesQuery(kind);
+	const { data, isLoading, isError, refetch } = useCategoriesQuery(kind);
 	const createMutation = useCreateCategoryMutation();
 	const updateMutation = useUpdateCategoryMutation();
 	const deleteMutation = useDeleteCategoryMutation();
@@ -44,6 +44,8 @@ export function CategoryKindPanel({ kind }: CategoryKindPanelProps) {
 
 	const formOpen = formMode != null;
 	const formPending = createMutation.isPending || updateMutation.isPending;
+	const kindLabel = kind === 'expense' ? 'Expense' : 'Income';
+	const addLabel = `New ${kindLabel} Category`;
 
 	const formTitle =
 		formMode?.type === 'create-main'
@@ -63,7 +65,11 @@ export function CategoryKindPanel({ kind }: CategoryKindPanelProps) {
 
 	const formInitialName = formMode?.type === 'rename' ? formMode.category.name : '';
 	const formConfirmLabel =
-		formMode?.type === 'rename' ? 'Save' : formMode?.type === 'create-sub' ? 'Add subcategory' : 'Add category';
+		formMode?.type === 'rename'
+			? 'Save'
+			: formMode?.type === 'create-sub'
+				? 'Add subcategory'
+				: 'Add category';
 
 	const handleFormSubmit = async (name: string) => {
 		if (!formMode) return;
@@ -103,65 +109,66 @@ export function CategoryKindPanel({ kind }: CategoryKindPanelProps) {
 		}
 	};
 
-	if (isLoading) {
-		return (
-			<div className="space-y-3" aria-busy="true" aria-label="Loading categories">
-				<Skeleton className="h-10 w-40" />
-				<Skeleton className="h-28 w-full rounded-lg" />
-				<Skeleton className="h-28 w-full rounded-lg" />
-			</div>
-		);
-	}
-
-	if (isError) {
-		return (
-			<ErrorState
-				title="Could not load categories"
-				description="Check your connection and try again."
-				onRetry={() => {
-					void refetch();
-				}}
-			/>
-		);
-	}
-
 	return (
-		<div className="space-y-4">
-			<div className="flex flex-wrap items-center justify-end gap-3">
-				{isFetching && !isLoading ? (
-					<p className="mr-auto text-sm text-muted-foreground">Refreshing…</p>
-				) : null}
+		<section className="space-y-3" data-testid={`categories-section-${kind}`}>
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<h2 className="text-base font-semibold tracking-tight">{kindLabel}</h2>
 				<Button
 					type="button"
-					size="sm"
 					onClick={() => setFormMode({ type: 'create-main' })}
-					data-testid="add-main-category"
+					data-testid={`add-main-category-${kind}`}
 				>
-					<Plus />
-					Add category
+					<Plus className="size-4" />
+					{addLabel}
 				</Button>
 			</div>
 
-			{tree.length === 0 ? (
+			{isLoading ? (
+				<div
+					className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+					aria-busy="true"
+					aria-label={`Loading ${kind} categories`}
+				>
+					<Skeleton className="h-44 w-full rounded-xl" />
+					<Skeleton className="h-44 w-full rounded-xl" />
+					<Skeleton className="h-44 w-full rounded-xl" />
+					<Skeleton className="h-44 w-full rounded-xl" />
+				</div>
+			) : null}
+
+			{isError ? (
+				<ErrorState
+					title={`Could not load ${kind} categories`}
+					description="Check your connection and try again."
+					onRetry={() => {
+						void refetch();
+					}}
+				/>
+			) : null}
+
+			{!isLoading && !isError && tree.length === 0 ? (
 				<EmptyState
 					icon={FolderTree}
 					title={`No ${kind} categories yet`}
 					description="Add a main category to start organizing transactions."
 					action={
 						<Button type="button" onClick={() => setFormMode({ type: 'create-main' })}>
-							<Plus />
-							Add category
+							<Plus className="size-4" />
+							{addLabel}
 						</Button>
 					}
 				/>
-			) : (
+			) : null}
+
+			{!isLoading && !isError && tree.length > 0 ? (
 				<CategoryList
+					kind={kind}
 					tree={tree}
 					onAddSub={(parent) => setFormMode({ type: 'create-sub', parent })}
 					onRename={(category) => setFormMode({ type: 'rename', category })}
 					onDelete={setDeleteTarget}
 				/>
-			)}
+			) : null}
 
 			<CategoryFormDialog
 				open={formOpen}
@@ -187,6 +194,6 @@ export function CategoryKindPanel({ kind }: CategoryKindPanelProps) {
 					void handleDelete();
 				}}
 			/>
-		</div>
+		</section>
 	);
 }
