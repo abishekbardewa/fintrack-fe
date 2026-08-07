@@ -6,12 +6,12 @@ import { GuestRoute, ProtectedRoute } from '@/features/auth/components/route-gua
 import { LoginPage } from '@/features/auth/pages/login-page';
 import { RegisterPage } from '@/features/auth/pages/register-page';
 import { CategoriesPage } from '@/features/categories/pages/categories-page';
+import { GoalsPage } from '@/features/goals/pages/goals-page';
 import { SettingsPage } from '@/features/settings/pages/settings-page';
 import { TransactionsPage } from '@/features/transactions/pages/transactions-page';
 import { NotFoundPage } from '@/pages/not-found-page';
 import {
 	BudgetsPage,
-	GoalsPage,
 	ImportExportPage,
 	ReviewsPage,
 	TrendsPage,

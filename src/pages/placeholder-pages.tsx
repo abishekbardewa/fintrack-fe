@@ -1,7 +1,6 @@
 import {
 	ArrowLeftRight,
 	Sparkles,
-	Target,
 	TrendingUp,
 	Wallet,
 } from 'lucide-react';
@@ -14,16 +13,6 @@ export function BudgetsPage() {
 			title="Budgets"
 			description="Set monthly or weekly limits and track progress."
 			icon={Wallet}
-		/>
-	);
-}
-
-export function GoalsPage() {
-	return (
-		<ComingSoonPage
-			title="Goals"
-			description="Track savings goals and manual contributions."
-			icon={Target}
 		/>
 	);
 }
