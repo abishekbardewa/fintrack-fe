@@ -19,7 +19,7 @@ export function MobileBottomNav() {
 
 	return (
 		<nav
-			className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 md:hidden"
+			className="fixed inset-x-0 bottom-0 z-40 border-t border-border/15 bg-header/95 backdrop-blur supports-backdrop-filter:bg-header/80 md:hidden"
 			aria-label="Primary navigation"
 			style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
 		>
@@ -83,8 +83,8 @@ export function MobileBottomNav() {
 										onClick={() => setMoreOpen(false)}
 										className={({ isActive }) =>
 											cn(
-												'flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors',
-												isActive ? 'bg-primary/10 text-primary' : 'hover:bg-muted',
+												'flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors',
+												isActive ? 'nav-active-fill text-primary' : 'hover:bg-muted',
 											)
 										}
 									>

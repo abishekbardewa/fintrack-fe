@@ -107,7 +107,15 @@ export function RegisterPage() {
 	return (
 		<AuthLayout
 			title="Create account"
-			subtitle="Join FinTRACK and start with a clear money picture."
+			subtitle="Begin your journey to financial clarity."
+			panelHeadline={
+				<>
+					Design your
+					<br />
+					<span className="text-primary">wealth.</span>
+				</>
+			}
+			panelDescription="Join FinTrack to orchestrate budgets, goals, and spending in one elegant place."
 			footer={
 				<>
 					Already have an account? <AuthLink to="/login">Log in</AuthLink>
@@ -153,9 +161,6 @@ export function RegisterPage() {
 					error={state.fieldErrors.password}
 					disabled={isPending}
 				/>
-				<p className="text-xs text-muted-foreground">
-					Use 8–30 characters with upper, lower, number, and a special character.
-				</p>
 				<div className="grid gap-2">
 					<Label htmlFor="register-currency">Currency</Label>
 					<input type="hidden" name="currency" value={currency} />
@@ -184,6 +189,7 @@ export function RegisterPage() {
 				</div>
 				<Button
 					type="submit"
+					size="lg"
 					className="mt-1 w-full"
 					disabled={isPending}
 					data-testid="register-submit"

@@ -84,6 +84,14 @@ export function LoginPage() {
 		<AuthLayout
 			title="Log in"
 			subtitle="Welcome back. Pick up where you left off."
+			panelHeadline={
+				<>
+					Track your
+					<br />
+					<span className="text-primary">money.</span>
+				</>
+			}
+			panelDescription="Sign in to keep budgets, goals, and spending in one clear place."
 			footer={
 				<>
 					Don&apos;t have an account? <AuthLink to="/register">Sign up</AuthLink>
@@ -118,7 +126,7 @@ export function LoginPage() {
 					error={state.fieldErrors.password}
 					disabled={isPending}
 				/>
-				<Button type="submit" className="mt-2 w-full" disabled={isPending} data-testid="login-submit">
+				<Button type="submit" size="lg" className="mt-2 w-full" disabled={isPending} data-testid="login-submit">
 					{isPending ? (
 						<>
 							<Loader2 className="animate-spin" />

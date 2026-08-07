@@ -1,48 +1,65 @@
 import { Link } from 'react-router-dom';
 
+import { BrandMark } from '@/components/brand/brand-mark';
+
 interface AuthLayoutProps {
 	title: string;
 	subtitle: string;
+	panelHeadline: React.ReactNode;
+	panelDescription: string;
 	children: React.ReactNode;
 	footer: React.ReactNode;
 }
 
-export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProps) {
+export function AuthLayout({
+	title,
+	subtitle,
+	panelHeadline,
+	panelDescription,
+	children,
+	footer,
+}: AuthLayoutProps) {
 	return (
-		<div className="flex min-h-svh w-full bg-background text-foreground">
-			<section className="flex min-h-svh w-full flex-col justify-center px-6 py-10 sm:px-10 lg:w-1/2 lg:px-16">
-				<div className="mb-8 lg:hidden">
-					<p className="text-xl font-semibold tracking-tight text-foreground">FinTRACK</p>
-					<p className="text-xs text-muted-foreground">Personal finance, clearly</p>
-				</div>
-
-				<div className="mx-auto w-full max-w-[400px]">
-					<header className="mb-8">
-						<p className="mb-6 hidden text-lg font-semibold tracking-tight text-foreground lg:block">
-							FinTRACK
+		<div className="relative flex min-h-svh w-full overflow-y-auto overflow-x-clip bg-background text-foreground lg:h-svh lg:overflow-hidden">
+			<main className="relative z-10 flex w-full flex-col lg:h-full lg:flex-row">
+				<section className="relative flex w-full flex-col justify-center px-6 py-8 sm:px-10 lg:w-1/2 lg:px-12 lg:py-12 xl:px-20 auth-mesh">
+					<div
+						className="pointer-events-none absolute inset-0 opacity-[0.06]"
+						style={{
+							backgroundImage:
+								'linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)',
+							backgroundSize: '80px 80px',
+						}}
+						aria-hidden="true"
+					/>
+					<div className="relative z-10 flex max-w-lg flex-col gap-5 lg:gap-6">
+						<BrandMark />
+						<div className="flex flex-col gap-3">
+							<h1 className="text-4xl font-extrabold tracking-tighter text-foreground sm:text-5xl xl:text-6xl xl:leading-[1.05]">
+								{panelHeadline}
+							</h1>
+							<p className="text-sm text-muted-foreground sm:text-base">{panelDescription}</p>
+						</div>
+						<p className="text-[10px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+							Clarity · Budgets · Goals
 						</p>
-						<h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-[1.75rem]">
-							{title}
-						</h1>
-						<p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
-					</header>
+					</div>
+				</section>
 
-					{children}
+				<section className="flex w-full flex-1 items-center justify-center bg-muted px-6 py-6 sm:px-10 lg:w-1/2 lg:px-12 lg:py-12">
+					<div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-border/20 bg-card p-6 shadow-[0_20px_40px_rgba(0,64,161,0.04)] sm:p-8 dark:border-border/10 dark:shadow-none">
+						<div className="primary-gradient absolute top-0 left-0 h-1 w-full" aria-hidden="true" />
+						<header className="mb-6">
+							<h2 className="text-2xl font-bold tracking-tight text-foreground">{title}</h2>
+							<p className="mt-1.5 text-sm text-muted-foreground">{subtitle}</p>
+						</header>
 
-					<div className="mt-6 text-center text-sm text-muted-foreground">{footer}</div>
-				</div>
-			</section>
+						{children}
 
-			<aside
-				className="relative hidden min-h-svh items-center justify-center bg-muted lg:flex lg:w-1/2"
-				aria-hidden="true"
-			>
-				<img
-					src="/login.svg"
-					alt=""
-					className="max-h-[min(28rem,55vh)] w-full max-w-md object-contain px-12 opacity-90"
-				/>
-			</aside>
+						<div className="mt-6 text-center text-sm text-muted-foreground">{footer}</div>
+					</div>
+				</section>
+			</main>
 		</div>
 	);
 }
@@ -54,7 +71,7 @@ interface AuthLinkProps {
 
 export function AuthLink({ to, children }: AuthLinkProps) {
 	return (
-		<Link to={to} className="font-medium text-primary underline-offset-4 hover:underline">
+		<Link to={to} className="font-semibold text-primary underline-offset-4 hover:underline">
 			{children}
 		</Link>
 	);

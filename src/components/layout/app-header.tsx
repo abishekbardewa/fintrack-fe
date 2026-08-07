@@ -10,7 +10,7 @@ interface AppHeaderProps {
 export function AppHeader({ showSidebarExpand = false, onExpandSidebar }: AppHeaderProps) {
 	return (
 		<header
-			className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80"
+			className="sticky top-0 z-30 border-b border-border/15 bg-header/90 backdrop-blur-md supports-backdrop-filter:bg-header/75"
 			aria-label="App toolbar"
 		>
 			<div className="flex h-14 w-full items-center justify-between gap-2 px-5 md:px-6">
