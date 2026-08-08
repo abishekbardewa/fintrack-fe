@@ -14,13 +14,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
-import {
 	goalFieldErrors,
 	goalFormSchema,
 	type GoalFormValues,
@@ -28,13 +21,12 @@ import {
 import type { SavingsGoal } from '@/features/goals/types';
 import { toDateInputValue } from '@/features/goals/utils';
 import { dateInputToIso } from '@/features/transactions/utils';
-import { SUPPORTED_CURRENCIES } from '@/lib/currencies';
 
 interface GoalFormDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	goal?: SavingsGoal | null;
-	defaultCurrency: string;
+	preferredCurrency: string;
 	pending?: boolean;
 	onSubmit: (payload: {
 		name: string;
@@ -48,7 +40,7 @@ export function GoalFormDialog({
 	open,
 	onOpenChange,
 	goal,
-	defaultCurrency,
+	preferredCurrency,
 	pending = false,
 	onSubmit,
 }: GoalFormDialogProps) {
@@ -59,7 +51,7 @@ export function GoalFormDialog({
 					<GoalFormFields
 						key={goal?.id ?? 'create'}
 						goal={goal}
-						defaultCurrency={defaultCurrency}
+						preferredCurrency={preferredCurrency}
 						pending={pending}
 						onCancel={() => onOpenChange(false)}
 						onSubmit={onSubmit}
@@ -72,7 +64,7 @@ export function GoalFormDialog({
 
 interface GoalFormFieldsProps {
 	goal?: SavingsGoal | null;
-	defaultCurrency: string;
+	preferredCurrency: string;
 	pending: boolean;
 	onCancel: () => void;
 	onSubmit: GoalFormDialogProps['onSubmit'];
@@ -80,7 +72,7 @@ interface GoalFormFieldsProps {
 
 function GoalFormFields({
 	goal,
-	defaultCurrency,
+	preferredCurrency,
 	pending,
 	onCancel,
 	onSubmit,
@@ -89,7 +81,6 @@ function GoalFormFields({
 	const [values, setValues] = useState<GoalFormValues>(() => ({
 		name: goal?.name ?? '',
 		targetAmount: goal ? String(goal.targetAmount) : '',
-		currency: (goal?.currency ?? defaultCurrency) as GoalFormValues['currency'],
 		targetDate: goal?.targetDate ? toDateInputValue(goal.targetDate) : '',
 	}));
 	const [errors, setErrors] = useState<Partial<Record<keyof GoalFormValues, string>>>({});
@@ -110,7 +101,7 @@ function GoalFormFields({
 		await onSubmit({
 			name: parsed.name,
 			targetAmount: Number(parsed.targetAmount),
-			...(isEdit ? {} : { currency: parsed.currency }),
+			...(isEdit ? {} : { currency: preferredCurrency }),
 			targetDate: parsed.targetDate ? dateInputToIso(parsed.targetDate) : null,
 		});
 	};
@@ -120,9 +111,7 @@ function GoalFormFields({
 			<DialogHeader>
 				<DialogTitle>{isEdit ? 'Edit goal' : 'New savings goal'}</DialogTitle>
 				<DialogDescription>
-					{isEdit
-						? 'Update name, target amount, or target date. Currency cannot change.'
-						: 'Set a target and optional date. Progress updates as you add contributions.'}
+					{isEdit ? 'Update this goal.' : 'Set a target amount and optional date.'}
 				</DialogDescription>
 			</DialogHeader>
 
@@ -159,29 +148,6 @@ function GoalFormFields({
 					/>
 					{errors.targetAmount ? (
 						<p className="text-sm text-destructive">{errors.targetAmount}</p>
-					) : null}
-				</div>
-
-				<div className="grid gap-2">
-					<Label>Currency</Label>
-					<Select
-						value={values.currency}
-						onValueChange={(v) => setField('currency', v as GoalFormValues['currency'])}
-						disabled={pending || isEdit}
-					>
-						<SelectTrigger aria-label="Goal currency" data-testid="goal-currency">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{SUPPORTED_CURRENCIES.map((c) => (
-								<SelectItem key={c.code} value={c.code}>
-									{c.code} — {c.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-					{isEdit ? (
-						<p className="text-xs text-muted-foreground">Currency is fixed after create.</p>
 					) : null}
 				</div>
 

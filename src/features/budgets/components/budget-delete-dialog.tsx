@@ -11,28 +11,28 @@ import {
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-interface CategoryDeleteDialogProps {
+interface BudgetDeleteDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	categoryName: string;
+	budgetLabel: string;
 	pending?: boolean;
 	onConfirm: () => void;
 }
 
-export function CategoryDeleteDialog({
+export function BudgetDeleteDialog({
 	open,
 	onOpenChange,
-	categoryName,
+	budgetLabel,
 	pending = false,
 	onConfirm,
-}: CategoryDeleteDialogProps) {
+}: BudgetDeleteDialogProps) {
 	return (
 		<AlertDialog open={open} onOpenChange={onOpenChange}>
 			<AlertDialogContent>
 				<AlertDialogHeader>
-					<AlertDialogTitle>Delete category?</AlertDialogTitle>
+					<AlertDialogTitle>Delete budget?</AlertDialogTitle>
 					<AlertDialogDescription>
-						Delete &ldquo;{categoryName}&rdquo;? This cannot be undone.
+						Delete the &ldquo;{budgetLabel}&rdquo; budget for this period? This cannot be undone.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
@@ -44,7 +44,7 @@ export function CategoryDeleteDialog({
 							e.preventDefault();
 							onConfirm();
 						}}
-						data-testid="category-delete-confirm"
+						data-testid="budget-delete-confirm"
 					>
 						{pending ? (
 							<>

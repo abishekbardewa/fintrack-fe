@@ -90,9 +90,6 @@ function CurrencyFormFields({ user }: CurrencyFormProps) {
 		<form onSubmit={handleSubmit} noValidate className="grid gap-6">
 			<div>
 				<h2 className="text-lg font-semibold tracking-tight">Preferred Currency</h2>
-				<p className="mt-1 text-sm text-muted-foreground">
-					Choose the currency used for totals and display conversion.
-				</p>
 			</div>
 
 			<div className="grid max-w-md gap-2">

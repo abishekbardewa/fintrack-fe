@@ -14,26 +14,18 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
-import {
 	contributionFieldErrors,
 	contributionFormSchema,
 	type ContributionFormValues,
 } from '@/features/goals/schemas';
 import type { SavingsGoal } from '@/features/goals/types';
 import { todayDateInput, dateInputToIso } from '@/features/transactions/utils';
-import { SUPPORTED_CURRENCIES } from '@/lib/currencies';
 
 interface GoalContributeDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	goal: SavingsGoal | null;
-	defaultCurrency: string;
+	preferredCurrency: string;
 	pending?: boolean;
 	onSubmit: (payload: {
 		amount: number;
@@ -47,7 +39,7 @@ export function GoalContributeDialog({
 	open,
 	onOpenChange,
 	goal,
-	defaultCurrency,
+	preferredCurrency,
 	pending = false,
 	onSubmit,
 }: GoalContributeDialogProps) {
@@ -58,7 +50,7 @@ export function GoalContributeDialog({
 					<ContributeFormFields
 						key={goal.id}
 						goalName={goal.name}
-						defaultCurrency={defaultCurrency}
+						preferredCurrency={preferredCurrency}
 						pending={pending}
 						onCancel={() => onOpenChange(false)}
 						onSubmit={onSubmit}
@@ -71,7 +63,7 @@ export function GoalContributeDialog({
 
 interface ContributeFormFieldsProps {
 	goalName: string;
-	defaultCurrency: string;
+	preferredCurrency: string;
 	pending: boolean;
 	onCancel: () => void;
 	onSubmit: GoalContributeDialogProps['onSubmit'];
@@ -79,14 +71,13 @@ interface ContributeFormFieldsProps {
 
 function ContributeFormFields({
 	goalName,
-	defaultCurrency,
+	preferredCurrency,
 	pending,
 	onCancel,
 	onSubmit,
 }: ContributeFormFieldsProps) {
 	const [values, setValues] = useState<ContributionFormValues>(() => ({
 		amount: '',
-		currency: defaultCurrency as ContributionFormValues['currency'],
 		date: todayDateInput(),
 		note: '',
 	}));
@@ -112,7 +103,7 @@ function ContributeFormFields({
 		const parsed = contributionFormSchema.parse(values);
 		await onSubmit({
 			amount: Number(parsed.amount),
-			currency: parsed.currency,
+			currency: preferredCurrency,
 			date: dateInputToIso(parsed.date),
 			note: parsed.note.trim() || undefined,
 		});
@@ -122,9 +113,7 @@ function ContributeFormFields({
 		<form onSubmit={handleSubmit} noValidate>
 			<DialogHeader>
 				<DialogTitle>Add contribution</DialogTitle>
-				<DialogDescription>
-					Add money toward &ldquo;{goalName}&rdquo;. Progress updates automatically.
-				</DialogDescription>
+				<DialogDescription>Add to &ldquo;{goalName}&rdquo;.</DialogDescription>
 			</DialogHeader>
 
 			<div className="grid gap-4 py-4">
@@ -145,28 +134,6 @@ function ContributeFormFields({
 						data-testid="contribution-amount-input"
 					/>
 					{errors.amount ? <p className="text-sm text-destructive">{errors.amount}</p> : null}
-				</div>
-
-				<div className="grid gap-2">
-					<Label>Currency</Label>
-					<Select
-						value={values.currency}
-						onValueChange={(v) =>
-							setField('currency', v as ContributionFormValues['currency'])
-						}
-						disabled={pending}
-					>
-						<SelectTrigger aria-label="Contribution currency">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{SUPPORTED_CURRENCIES.map((c) => (
-								<SelectItem key={c.code} value={c.code}>
-									{c.code}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
 				</div>
 
 				<div className="grid gap-2">

@@ -35,7 +35,7 @@ export function SettingsPage() {
 				<div>
 					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Settings</h1>
 					<p className="mt-1 text-sm text-muted-foreground">
-						Manage your account preferences and personalized experience.
+						Account and preferences.
 					</p>
 				</div>
 			</header>

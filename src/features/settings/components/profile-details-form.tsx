@@ -76,9 +76,6 @@ function ProfileDetailsFields({ user }: ProfileDetailsFormProps) {
 		<form onSubmit={handleSubmit} noValidate className="grid gap-6">
 			<div>
 				<h2 className="text-lg font-semibold tracking-tight">Profile Details</h2>
-				<p className="mt-1 text-sm text-muted-foreground">
-					Update your display name and review your account email.
-				</p>
 			</div>
 
 			<Avatar className="size-20">

@@ -75,9 +75,6 @@ export function ChangePasswordForm() {
 		<form onSubmit={handleSubmit} noValidate className="grid max-w-md gap-6">
 			<div>
 				<h2 className="text-lg font-semibold tracking-tight">Change Password</h2>
-				<p className="mt-1 text-sm text-muted-foreground">
-					Enter your current password, then choose a new one.
-				</p>
 			</div>
 
 			<PasswordInput

@@ -2,20 +2,9 @@ import {
 	ArrowLeftRight,
 	Sparkles,
 	TrendingUp,
-	Wallet,
 } from 'lucide-react';
 
 import { ComingSoonPage } from '@/components/common/coming-soon-page';
-
-export function BudgetsPage() {
-	return (
-		<ComingSoonPage
-			title="Budgets"
-			description="Set monthly or weekly limits and track progress."
-			icon={Wallet}
-		/>
-	);
-}
 
 export function TrendsPage() {
 	return (

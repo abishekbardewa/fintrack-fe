@@ -26,10 +26,7 @@ import { getErrorMessage } from '@/lib/api/errors';
 import { DEFAULT_CURRENCY } from '@/lib/currencies';
 import { cn } from '@/lib/utils';
 
-type StatusFilter = 'all' | SavingsGoalStatus;
-
-const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
-	{ value: 'all', label: 'All' },
+const STATUS_FILTERS: { value: SavingsGoalStatus; label: string }[] = [
 	{ value: 'active', label: 'Active' },
 	{ value: 'completed', label: 'Completed' },
 	{ value: 'cancelled', label: 'Cancelled' },
@@ -39,10 +36,9 @@ export function GoalsPage() {
 	const user = useAppSelector(selectUser);
 	const preferredCurrency = user?.currency || DEFAULT_CURRENCY;
 
-	const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-	const listStatus = statusFilter === 'all' ? undefined : statusFilter;
+	const [statusFilter, setStatusFilter] = useState<SavingsGoalStatus>('active');
 
-	const { data, isLoading, isError, refetch } = useGoalsQuery(listStatus);
+	const { data, isLoading, isError, refetch } = useGoalsQuery(statusFilter);
 	const { data: activeData } = useGoalsQuery('active');
 	const createMutation = useCreateGoalMutation();
 	const updateMutation = useUpdateGoalMutation();
@@ -185,11 +181,7 @@ export function GoalsPage() {
 				</p>
 			) : null}
 
-			<div
-				className="flex flex-wrap gap-1.5"
-				role="group"
-				aria-label="Filter by status"
-			>
+			<div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by status">
 				{STATUS_FILTERS.map((item) => {
 					const active = statusFilter === item.value;
 					return (
@@ -214,9 +206,9 @@ export function GoalsPage() {
 
 			{isLoading ? (
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-					<Skeleton className="h-48 rounded-2xl" />
-					<Skeleton className="h-48 rounded-2xl" />
-					<Skeleton className="h-48 rounded-2xl" />
+					<Skeleton className="h-48 rounded-3xl" />
+					<Skeleton className="h-48 rounded-3xl" />
+					<Skeleton className="h-48 rounded-3xl" />
 				</div>
 			) : null}
 
@@ -231,14 +223,20 @@ export function GoalsPage() {
 			{!isLoading && !isError && goals.length === 0 ? (
 				<EmptyState
 					icon={Target}
-					title={statusFilter === 'all' ? 'No savings goals yet' : 'No matching goals'}
+					title={
+						statusFilter === 'active'
+							? 'No active goals'
+							: statusFilter === 'completed'
+								? 'No completed goals'
+								: 'No cancelled goals'
+					}
 					description={
-						statusFilter === 'all'
-							? 'Create a goal and add contributions to track progress.'
-							: 'Try another status filter, or create a new goal.'
+						statusFilter === 'active'
+							? 'Create a goal to get started.'
+							: 'Try another status.'
 					}
 					action={
-						statusFilter === 'all' && !atActiveCap ? (
+						statusFilter === 'active' && !atActiveCap ? (
 							<Button type="button" onClick={openCreate}>
 								<Plus className="size-4" />
 								New Goal
@@ -268,7 +266,7 @@ export function GoalsPage() {
 					if (!open) setEditing(null);
 				}}
 				goal={editing}
-				defaultCurrency={preferredCurrency}
+				preferredCurrency={preferredCurrency}
 				pending={formPending}
 				onSubmit={handleFormSubmit}
 			/>
@@ -279,7 +277,7 @@ export function GoalsPage() {
 					if (!open) setContributing(null);
 				}}
 				goal={contributing}
-				defaultCurrency={preferredCurrency}
+				preferredCurrency={preferredCurrency}
 				pending={contributeMutation.isPending}
 				onSubmit={handleContribute}
 			/>

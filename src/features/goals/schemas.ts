@@ -1,9 +1,5 @@
 import { z } from 'zod';
 
-import { SUPPORTED_CURRENCIES } from '@/lib/currencies';
-
-const currencyCodes = SUPPORTED_CURRENCIES.map((c) => c.code) as [string, ...string[]];
-
 export const goalFormSchema = z.object({
 	name: z
 		.string()
@@ -15,7 +11,6 @@ export const goalFormSchema = z.object({
 		.trim()
 		.min(1, 'Target amount is required')
 		.refine((v) => !Number.isNaN(Number(v)) && Number(v) > 0, 'Enter a positive amount'),
-	currency: z.enum(currencyCodes),
 	targetDate: z.string(),
 });
 
@@ -40,7 +35,6 @@ export const contributionFormSchema = z.object({
 		.trim()
 		.min(1, 'Amount is required')
 		.refine((v) => !Number.isNaN(Number(v)) && Number(v) > 0, 'Enter a positive amount'),
-	currency: z.enum(currencyCodes),
 	date: z.string().min(1, 'Date is required'),
 	note: z.string().max(500, 'Note must be at most 500 characters'),
 });

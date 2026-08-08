@@ -27,6 +27,8 @@
 	--balance-soft: #e8f2fc;
 	--income-soft: #e8eefc;
 	--expense-soft: #e5f6ea;
+	--feature: #0040a1;
+	--feature-foreground: #ffffff;
 	--border: #c3c6d6;
 	--input: #c3c6d6;
 	--ring: #0040a1;
@@ -91,6 +93,8 @@
 	--balance-soft: #141f38;
 	--income-soft: #0f1930;
 	--expense-soft: #1a2420;
+	--feature: #1e4db8;
+	--feature-foreground: #eef4ff;
 	--border: #40485d;
 	--input: #40485d;
 	--ring: #7fafff;
@@ -153,6 +157,8 @@
 	--color-balance-soft: var(--balance-soft);
 	--color-income-soft: var(--income-soft);
 	--color-expense-soft: var(--expense-soft);
+	--color-feature: var(--feature);
+	--color-feature-foreground: var(--feature-foreground);
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);

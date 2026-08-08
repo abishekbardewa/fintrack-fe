@@ -23,9 +23,7 @@ export function AppShell() {
 					onExpandSidebar={() => setCollapsed(false)}
 				/>
 				<main className="min-h-[calc(100svh-3.5rem)] w-full max-w-[1400px] px-5 pb-24 pt-6 md:px-6 md:pb-8 md:pt-8">
-					<div className="rounded-2xl bg-muted/40 p-4 md:p-6 dark:bg-muted/50">
-						<Outlet />
-					</div>
+					<Outlet />
 				</main>
 			</div>
 			<MobileBottomNav />
