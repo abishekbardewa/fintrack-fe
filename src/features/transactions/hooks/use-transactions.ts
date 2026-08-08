@@ -5,12 +5,14 @@ import { trendsKeys } from '@/features/trends/hooks/use-trends';
 import {
 	createTransaction,
 	deleteTransaction,
+	importTransactions,
 	listTransactions,
 	suggestDescriptions,
 	updateTransaction,
 } from '@/features/transactions/transaction.service';
 import type {
 	CreateTransactionRequest,
+	ImportTransactionsRequest,
 	TransactionListParams,
 	UpdateTransactionRequest,
 } from '@/features/transactions/types';
@@ -77,6 +79,17 @@ export function useDeleteTransactionMutation() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: (id: string) => deleteTransaction(id),
+		onSuccess: () => {
+			void queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+			invalidateAnalytics(queryClient);
+		},
+	});
+}
+
+export function useImportTransactionsMutation() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (payload: ImportTransactionsRequest) => importTransactions(payload),
 		onSuccess: () => {
 			void queryClient.invalidateQueries({ queryKey: transactionKeys.all });
 			invalidateAnalytics(queryClient);

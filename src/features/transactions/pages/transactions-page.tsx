@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Plus, Receipt } from 'lucide-react';
+import { Plus, Receipt, Upload } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -12,8 +12,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { selectUser } from '@/features/auth/authSlice';
 import { useCategoriesQuery } from '@/features/categories/hooks/use-categories';
 import { TransactionDeleteDialog } from '@/features/transactions/components/transaction-delete-dialog';
+import {
+	TransactionExportDialog,
+	type TransactionExportSelection,
+} from '@/features/transactions/components/transaction-export-dialog';
+import { TransactionExportMenu } from '@/features/transactions/components/transaction-export-menu';
 import { TransactionFilters } from '@/features/transactions/components/transaction-filters';
 import { TransactionFormDialog } from '@/features/transactions/components/transaction-form-dialog';
+import { TransactionImportDialog } from '@/features/transactions/components/transaction-import-dialog';
 import { TransactionList } from '@/features/transactions/components/transaction-list';
 import {
 	useDeleteTransactionMutation,
@@ -48,8 +54,13 @@ export function TransactionsPage() {
 	const [manualFormOpen, setManualFormOpen] = useState(false);
 	const [editing, setEditing] = useState<Transaction | null>(null);
 	const [deleting, setDeleting] = useState<Transaction | null>(null);
+	const [exportSelection, setExportSelection] = useState<TransactionExportSelection | null>(
+		null,
+	);
+	const [importOpen, setImportOpen] = useState(false);
 
 	const formOpen = addRequested || manualFormOpen || editing != null;
+	const exportOpen = exportSelection != null;
 
 	const debouncedQ = useDebouncedValue(filters.q, 300);
 	const queryFilters = useMemo(
@@ -146,10 +157,25 @@ export function TransactionsPage() {
 						Review and manage your financial activity.
 					</p>
 				</div>
-				<Button type="button" onClick={openCreate} data-testid="transaction-add">
-					<Plus className="size-4" />
-					New Transaction
-				</Button>
+				<div className="flex flex-wrap items-center gap-2">
+					<Button type="button" onClick={openCreate} data-testid="transaction-add">
+						<Plus className="size-4" />
+						New Transaction
+					</Button>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => setImportOpen(true)}
+						data-testid="transaction-import"
+					>
+						<Upload className="size-4" />
+						Import
+					</Button>
+					<TransactionExportMenu
+						filtersActive={filtersActive}
+						onSelect={setExportSelection}
+					/>
+				</div>
 			</header>
 
 			{filtersActive && filterSummary ? (
@@ -249,6 +275,23 @@ export function TransactionsPage() {
 				label={deleteLabel}
 				pending={deleteMutation.isPending}
 				onConfirm={() => void handleDelete()}
+			/>
+
+			<TransactionExportDialog
+				open={exportOpen}
+				onOpenChange={(open) => {
+					if (!open) setExportSelection(null);
+				}}
+				selection={exportSelection}
+				filters={filters}
+				categoryLabels={categoryLabels}
+			/>
+
+			<TransactionImportDialog
+				open={importOpen}
+				onOpenChange={setImportOpen}
+				categories={categoriesData?.categories ?? []}
+				preferredCurrency={preferredCurrency}
 			/>
 		</div>
 	);

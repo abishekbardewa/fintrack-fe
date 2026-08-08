@@ -23,6 +23,10 @@ function toDateInput(date: Date): string {
 	return `${y}-${m}-${d}`;
 }
 
+function startOfDay(date: Date) {
+	return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
 interface DatePickerProps {
 	id?: string;
 	value: string;
@@ -32,6 +36,8 @@ interface DatePickerProps {
 	invalid?: boolean;
 	className?: string;
 	'aria-label'?: string;
+	minDate?: Date;
+	maxDate?: Date;
 }
 
 export function DatePicker({
@@ -43,9 +49,13 @@ export function DatePicker({
 	invalid,
 	className,
 	'aria-label': ariaLabel,
+	minDate,
+	maxDate,
 }: DatePickerProps) {
 	const [open, setOpen] = useState(false);
 	const selected = parseDateInput(value);
+	const min = minDate ? startOfDay(minDate) : undefined;
+	const max = maxDate ? startOfDay(maxDate) : undefined;
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} modal>
@@ -73,7 +83,15 @@ export function DatePicker({
 					mode="single"
 					selected={selected}
 					captionLayout="dropdown"
-					defaultMonth={selected}
+					defaultMonth={selected ?? max ?? min}
+					startMonth={min}
+					endMonth={max}
+					disabled={(date) => {
+						const day = startOfDay(date);
+						if (min && day < min) return true;
+						if (max && day > max) return true;
+						return false;
+					}}
 					onSelect={(date) => {
 						onChange(date ? toDateInput(date) : '');
 						setOpen(false);
