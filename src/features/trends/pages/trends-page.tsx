@@ -15,7 +15,7 @@ import { TrendsChartPreviews } from '@/features/trends/components/trends-chart-p
 import { TrendsSummaryCards } from '@/features/trends/components/trends-summary';
 import { useTrendsQuery } from '@/features/trends/hooks/use-trends';
 import type { TrendsRangeType } from '@/features/trends/types';
-import { buildTransactionsHref } from '@/features/transactions/utils';
+import { buildTransactionsHref, toDateInputValue } from '@/features/transactions/utils';
 import { cn } from '@/lib/utils';
 
 const PRIMARY_RANGES: { value: TrendsRangeType; label: string }[] = [
@@ -71,8 +71,8 @@ export function TrendsPage() {
 
 	const transactionsHref = data
 		? buildTransactionsHref({
-				from: data.range.from,
-				to: data.range.to,
+				from: toDateInputValue(data.range.from),
+				to: toDateInputValue(data.range.to),
 			})
 		: '/transactions';
 
