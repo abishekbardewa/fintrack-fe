@@ -2,12 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAppDispatch } from '@/app/hooks';
 import { setUser } from '@/features/auth/authSlice';
+import { dashboardKeys } from '@/features/dashboard/hooks/use-dashboard';
 import {
 	changePassword,
 	getMe,
 	updateMe,
 } from '@/features/settings/profile.service';
 import type { ChangePasswordRequest, UpdateMeRequest } from '@/features/settings/types';
+import { trendsKeys } from '@/features/trends/hooks/use-trends';
 
 export const profileKeys = {
 	all: ['profile'] as const,
@@ -36,6 +38,8 @@ export function useUpdateMeMutation() {
 		onSuccess: (data) => {
 			dispatch(setUser(data.user));
 			queryClient.setQueryData(profileKeys.me(), data);
+			void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+			void queryClient.invalidateQueries({ queryKey: trendsKeys.all });
 		},
 	});
 }

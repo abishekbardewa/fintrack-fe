@@ -74,7 +74,7 @@ export function RegisterPage() {
 					}),
 				);
 				toast.success('Account created');
-				navigate('/pulse', { replace: true });
+				navigate('/dashboard', { replace: true });
 				return {
 					fieldErrors: {},
 					values: { name: '', email: '', password: '', currency: parsed.currency },

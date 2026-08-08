@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { Navigate, createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import { HomeRedirect } from '@/app/home-redirect';
 import { AppShell } from '@/components/layout/app-shell';
@@ -14,9 +14,9 @@ import { NotFoundPage } from '@/pages/not-found-page';
 import {
 	ImportExportPage,
 	ReviewsPage,
-	TrendsPage,
 } from '@/pages/placeholder-pages';
-import { PulsePage } from '@/pages/pulse-page';
+import { DashboardPage } from '@/features/dashboard/pages/dashboard-page';
+import { TrendsPage } from '@/features/trends/pages/trends-page';
 
 const router = createBrowserRouter([
 	{
@@ -36,7 +36,8 @@ const router = createBrowserRouter([
 			{
 				element: <AppShell />,
 				children: [
-					{ path: '/pulse', element: <PulsePage /> },
+					{ path: '/dashboard', element: <DashboardPage /> },
+					{ path: '/pulse', element: <Navigate to="/dashboard" replace /> },
 					{ path: '/transactions', element: <TransactionsPage /> },
 					{ path: '/budgets', element: <BudgetsPage /> },
 					{ path: '/goals', element: <GoalsPage /> },

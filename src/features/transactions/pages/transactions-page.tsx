@@ -22,8 +22,11 @@ import {
 import type { Transaction } from '@/features/transactions/types';
 import {
 	EMPTY_FILTERS,
+	describeActiveFilters,
 	draftToParams,
+	filtersFromSearchParams,
 	hasActiveFilters,
+	writeFiltersToSearchParams,
 	type TransactionFilterDraft,
 } from '@/features/transactions/utils';
 import { getErrorMessage } from '@/lib/api/errors';
@@ -38,7 +41,9 @@ export function TransactionsPage() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const addRequested = searchParams.get('add') === '1';
 
-	const [filters, setFilters] = useState<TransactionFilterDraft>(EMPTY_FILTERS);
+	const [filters, setFilters] = useState<TransactionFilterDraft>(() =>
+		filtersFromSearchParams(searchParams),
+	);
 	const [page, setPage] = useState(1);
 	const [manualFormOpen, setManualFormOpen] = useState(false);
 	const [editing, setEditing] = useState<Transaction | null>(null);
@@ -68,6 +73,12 @@ export function TransactionsPage() {
 		return map;
 	}, [categoriesData?.categories]);
 
+	const filtersActive = hasActiveFilters(filters);
+	const filterSummary = useMemo(
+		() => describeActiveFilters(filters, categoryLabels),
+		[filters, categoryLabels],
+	);
+
 	const clearAddParam = () => {
 		if (!addRequested) return;
 		const next = new URLSearchParams(searchParams);
@@ -88,6 +99,11 @@ export function TransactionsPage() {
 	const handleFiltersChange = (next: TransactionFilterDraft) => {
 		setFilters(next);
 		setPage(1);
+		setSearchParams(writeFiltersToSearchParams(searchParams, next), { replace: true });
+	};
+
+	const clearFilters = () => {
+		handleFiltersChange(EMPTY_FILTERS);
 	};
 
 	const openCreate = () => {
@@ -114,7 +130,7 @@ export function TransactionsPage() {
 	const items = data?.items ?? [];
 	const totalPages = data?.totalPages ?? 1;
 	const empty = !isLoading && !isError && items.length === 0;
-	const filteredEmpty = empty && hasActiveFilters(filters);
+	const filteredEmpty = empty && filtersActive;
 	const pageNum = data?.page ?? page;
 
 	const deleteLabel =
@@ -135,6 +151,24 @@ export function TransactionsPage() {
 					New Transaction
 				</Button>
 			</header>
+
+			{filtersActive && filterSummary ? (
+				<div
+					className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/70 bg-muted/40 px-3 py-2"
+					data-testid="transaction-filter-banner"
+				>
+					<p className="text-sm text-foreground">{filterSummary}</p>
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						onClick={clearFilters}
+						data-testid="transaction-filter-clear"
+					>
+						Clear
+					</Button>
+				</div>
+			) : null}
 
 			<div className="flex flex-col gap-6 lg:flex-row lg:items-start">
 				<TransactionFilters

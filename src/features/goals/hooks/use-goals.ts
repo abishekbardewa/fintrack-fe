@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { dashboardKeys } from '@/features/dashboard/hooks/use-dashboard';
 import {
 	addContribution,
 	createGoal,
@@ -40,6 +41,7 @@ export function useContributionsQuery(goalId: string | null) {
 
 function invalidateGoals(queryClient: ReturnType<typeof useQueryClient>) {
 	void queryClient.invalidateQueries({ queryKey: goalKeys.all });
+	void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
 }
 
 export function useCreateGoalMutation() {

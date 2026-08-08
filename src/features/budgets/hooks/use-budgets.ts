@@ -6,6 +6,7 @@ import {
 	upsertBudget,
 } from '@/features/budgets/budget.service';
 import type { ListBudgetsParams, UpsertBudgetRequest } from '@/features/budgets/types';
+import { dashboardKeys } from '@/features/dashboard/hooks/use-dashboard';
 
 export const budgetKeys = {
 	all: ['budgets'] as const,
@@ -30,6 +31,7 @@ export function useBudgetsQuery(params: ListBudgetsParams, enabled = true) {
 
 function invalidateBudgets(queryClient: ReturnType<typeof useQueryClient>) {
 	void queryClient.invalidateQueries({ queryKey: budgetKeys.all });
+	void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
 }
 
 export function useUpsertBudgetMutation() {

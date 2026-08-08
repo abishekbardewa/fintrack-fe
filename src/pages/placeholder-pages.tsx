@@ -1,20 +1,9 @@
 import {
 	ArrowLeftRight,
 	Sparkles,
-	TrendingUp,
 } from 'lucide-react';
 
 import { ComingSoonPage } from '@/components/common/coming-soon-page';
-
-export function TrendsPage() {
-	return (
-		<ComingSoonPage
-			title="Trends"
-			description="Time-series charts for net, income, and expense."
-			icon={TrendingUp}
-		/>
-	);
-}
 
 export function ReviewsPage() {
 	return (

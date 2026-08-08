@@ -54,7 +54,7 @@ export function LoginPage() {
 					}),
 				);
 				toast.success('Welcome back');
-				navigate('/pulse', { replace: true });
+				navigate('/dashboard', { replace: true });
 				return {
 					fieldErrors: {},
 					values: { email: parsed.email, password: '' },

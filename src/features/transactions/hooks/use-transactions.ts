@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { dashboardKeys } from '@/features/dashboard/hooks/use-dashboard';
+import { trendsKeys } from '@/features/trends/hooks/use-trends';
 import {
 	createTransaction,
 	deleteTransaction,
@@ -12,6 +14,11 @@ import type {
 	TransactionListParams,
 	UpdateTransactionRequest,
 } from '@/features/transactions/types';
+
+function invalidateAnalytics(queryClient: ReturnType<typeof useQueryClient>) {
+	void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+	void queryClient.invalidateQueries({ queryKey: trendsKeys.all });
+}
 
 export const transactionKeys = {
 	all: ['transactions'] as const,
@@ -49,6 +56,7 @@ export function useCreateTransactionMutation() {
 		mutationFn: (payload: CreateTransactionRequest) => createTransaction(payload),
 		onSuccess: () => {
 			void queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+			invalidateAnalytics(queryClient);
 		},
 	});
 }
@@ -60,6 +68,7 @@ export function useUpdateTransactionMutation() {
 			updateTransaction(id, payload),
 		onSuccess: () => {
 			void queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+			invalidateAnalytics(queryClient);
 		},
 	});
 }
@@ -70,6 +79,7 @@ export function useDeleteTransactionMutation() {
 		mutationFn: (id: string) => deleteTransaction(id),
 		onSuccess: () => {
 			void queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+			invalidateAnalytics(queryClient);
 		},
 	});
 }
