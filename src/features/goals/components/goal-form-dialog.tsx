@@ -127,7 +127,7 @@ function GoalFormFields({
 						aria-invalid={Boolean(errors.name)}
 						data-testid="goal-name-input"
 					/>
-					{errors.name ? <p className="text-sm text-destructive">{errors.name}</p> : null}
+					{errors.name ? <p className="text-[10px] leading-tight text-destructive">{errors.name}</p> : null}
 				</div>
 
 				<div className="grid gap-2">
@@ -147,7 +147,7 @@ function GoalFormFields({
 						data-testid="goal-target-input"
 					/>
 					{errors.targetAmount ? (
-						<p className="text-sm text-destructive">{errors.targetAmount}</p>
+						<p className="text-[10px] leading-tight text-destructive">{errors.targetAmount}</p>
 					) : null}
 				</div>
 

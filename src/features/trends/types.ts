@@ -10,6 +10,7 @@ export interface TrendsSummary {
 	income: number;
 	expense: number;
 	net: number;
+	savingsRate: number | null;
 	vsPrevious: {
 		incomePct: number | null;
 		expensePct: number | null;

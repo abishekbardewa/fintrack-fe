@@ -133,7 +133,7 @@ function ContributeFormFields({
 						aria-invalid={Boolean(errors.amount)}
 						data-testid="contribution-amount-input"
 					/>
-					{errors.amount ? <p className="text-sm text-destructive">{errors.amount}</p> : null}
+					{errors.amount ? <p className="text-[10px] leading-tight text-destructive">{errors.amount}</p> : null}
 				</div>
 
 				<div className="grid gap-2">
@@ -145,7 +145,7 @@ function ContributeFormFields({
 						invalid={Boolean(errors.date)}
 						aria-label="Contribution date"
 					/>
-					{errors.date ? <p className="text-sm text-destructive">{errors.date}</p> : null}
+					{errors.date ? <p className="text-[10px] leading-tight text-destructive">{errors.date}</p> : null}
 				</div>
 
 				<div className="grid gap-2">
@@ -158,7 +158,7 @@ function ContributeFormFields({
 						disabled={pending}
 						aria-invalid={Boolean(errors.note)}
 					/>
-					{errors.note ? <p className="text-sm text-destructive">{errors.note}</p> : null}
+					{errors.note ? <p className="text-[10px] leading-tight text-destructive">{errors.note}</p> : null}
 				</div>
 			</div>
 

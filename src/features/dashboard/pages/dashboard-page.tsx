@@ -77,15 +77,17 @@ export function DashboardPage() {
 						<Skeleton className="h-24 rounded-2xl" />
 						<Skeleton className="h-24 rounded-2xl" />
 					</div>
-					<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-						<Skeleton className="h-72 rounded-2xl" />
-						<Skeleton className="h-72 rounded-2xl" />
+					<div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+						<div className="space-y-4">
+							<Skeleton className="h-72 rounded-2xl" />
+							<Skeleton className="h-72 rounded-2xl" />
+						</div>
+						<div className="space-y-4">
+							<Skeleton className="h-28 rounded-2xl" />
+							<Skeleton className="h-28 rounded-2xl" />
+							<Skeleton className="h-56 rounded-2xl" />
+						</div>
 					</div>
-					<div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
-						<Skeleton className="h-48 rounded-2xl" />
-						<Skeleton className="h-48 rounded-2xl" />
-					</div>
-					<Skeleton className="h-40 rounded-2xl" />
 				</div>
 			) : null}
 
@@ -95,41 +97,62 @@ export function DashboardPage() {
 
 			{data ? (
 				<>
-					<DashboardSnapshotCards summary={data.summary} currency={data.currency} />
-
-					<DashboardChartPreviews
-						cashFlow={data.cashFlow}
-						categoryCompare={data.categoryCompare}
+					<DashboardSnapshotCards
+						summary={data.summary}
 						currency={data.currency}
-						periodLabel={data.period.label}
+						period={period}
 					/>
 
-					<div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
-						<section>
-							<div className="mb-3">
-								<h2 className="text-base font-semibold tracking-tight">Budgets</h2>
-								<p className="text-xs text-muted-foreground">This month</p>
-							</div>
-							<DashboardBudgetHealth budgets={data.budgets} currency={data.currency} />
-						</section>
-
-						<section>
-							<div className="mb-3">
-								<h2 className="text-base font-semibold tracking-tight">Goals</h2>
-							</div>
-							<DashboardGoalsStrip goals={data.goals} currency={data.currency} />
-						</section>
-					</div>
-
-					<section>
-						<div className="mb-3">
-							<h2 className="text-base font-semibold tracking-tight">Recent</h2>
-						</div>
-						<DashboardRecentTransactions
-							items={data.recentTransactions}
+					<div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+						<DashboardChartPreviews
+							cashFlow={data.cashFlow}
+							categoryCompare={data.categoryCompare}
 							currency={data.currency}
+							periodLabel={data.period.label}
 						/>
-					</section>
+
+						<aside className="flex flex-col gap-6">
+							<section>
+								<div className="mb-3">
+									<div className="flex items-center justify-between gap-3">
+										<h2 className="text-base font-semibold tracking-tight">Budgets</h2>
+										{data.budgets.length > 0 ? (
+											<Link
+												to="/budgets"
+												className="shrink-0 text-sm font-medium text-primary underline-offset-4 hover:underline"
+											>
+												View budgets
+											</Link>
+										) : null}
+									</div>
+									<p className="text-xs text-muted-foreground">This month</p>
+								</div>
+								<DashboardBudgetHealth budgets={data.budgets} currency={data.currency} />
+							</section>
+
+							<section>
+								<div className="mb-3 flex items-center justify-between gap-3">
+									<h2 className="text-base font-semibold tracking-tight">Goals</h2>
+									{data.goals.length > 0 ? (
+										<Link
+											to="/goals"
+											className="shrink-0 text-sm font-medium text-primary underline-offset-4 hover:underline"
+										>
+											View goals
+										</Link>
+									) : null}
+								</div>
+								<DashboardGoalsStrip goals={data.goals} currency={data.currency} />
+							</section>
+
+							<section>
+								<DashboardRecentTransactions
+									items={data.recentTransactions}
+									currency={data.currency}
+								/>
+							</section>
+						</aside>
+					</div>
 				</>
 			) : null}
 		</div>

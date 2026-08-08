@@ -23,7 +23,7 @@ export const NAV_ITEMS: NavItem[] = [
 	{ title: 'Goals', href: '/goals', icon: Target, primary: true },
 	{ title: 'Categories', href: '/categories', icon: FolderTree },
 	{ title: 'Trends', href: '/trends', icon: TrendingUp },
-	{ title: 'Reviews', href: '/reviews', icon: Sparkles },
+	{ title: 'AI Review', href: '/reviews', icon: Sparkles },
 ];
 
 export const PRIMARY_NAV_ITEMS = NAV_ITEMS.filter((item) => item.primary);

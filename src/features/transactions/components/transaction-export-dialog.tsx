@@ -173,7 +173,7 @@ export function TransactionExportDialog({
 								</div>
 							</div>
 							{rangeError ? (
-								<p className="text-sm text-destructive" data-testid="transaction-export-error">
+								<p className="text-[10px] leading-tight text-destructive" data-testid="transaction-export-error">
 									{rangeError}
 								</p>
 							) : null}

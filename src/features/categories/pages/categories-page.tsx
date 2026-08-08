@@ -36,21 +36,22 @@ export function CategoriesPage() {
 				</Button>
 			</header>
 
-			<div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by kind">
+			<div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter by kind">
 				{KIND_FILTERS.map((item) => {
 					const active = kind === item.value;
 					return (
 						<button
 							key={item.value}
 							type="button"
+							role="tab"
+							aria-selected={active}
 							onClick={() => setKind(item.value)}
 							className={cn(
-								'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+								'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
 								active
-									? 'border-primary/30 bg-primary text-primary-foreground'
-									: 'border-border bg-card text-muted-foreground hover:text-foreground',
+									? 'bg-primary text-primary-foreground shadow-sm'
+									: 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
 							)}
-							aria-pressed={active}
 							data-testid={`category-filter-${item.value}`}
 						>
 							{item.label}

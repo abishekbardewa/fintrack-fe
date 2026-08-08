@@ -69,7 +69,7 @@ export function DatePicker({
 					aria-label={ariaLabel}
 					data-empty={!selected}
 					className={cn(
-						'h-9 w-full justify-start px-3 text-left font-normal',
+						'h-10 w-full justify-start rounded-lg border border-input/20 bg-muted px-3 text-left font-normal shadow-xs hover:bg-muted/80 dark:border-input/20 dark:bg-muted dark:hover:bg-muted/80',
 						!selected && 'text-muted-foreground',
 						className,
 					)}

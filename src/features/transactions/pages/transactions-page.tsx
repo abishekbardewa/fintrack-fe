@@ -27,8 +27,6 @@ import {
 } from '@/features/transactions/hooks/use-transactions';
 import type { Transaction } from '@/features/transactions/types';
 import {
-	EMPTY_FILTERS,
-	describeActiveFilters,
 	draftToParams,
 	filtersFromSearchParams,
 	hasActiveFilters,
@@ -85,10 +83,6 @@ export function TransactionsPage() {
 	}, [categoriesData?.categories]);
 
 	const filtersActive = hasActiveFilters(filters);
-	const filterSummary = useMemo(
-		() => describeActiveFilters(filters, categoryLabels),
-		[filters, categoryLabels],
-	);
 
 	const clearAddParam = () => {
 		if (!addRequested) return;
@@ -111,10 +105,6 @@ export function TransactionsPage() {
 		setFilters(next);
 		setPage(1);
 		setSearchParams(writeFiltersToSearchParams(searchParams, next), { replace: true });
-	};
-
-	const clearFilters = () => {
-		handleFiltersChange(EMPTY_FILTERS);
 	};
 
 	const openCreate = () => {
@@ -178,87 +168,64 @@ export function TransactionsPage() {
 				</div>
 			</header>
 
-			{filtersActive && filterSummary ? (
-				<div
-					className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/70 bg-muted/40 px-3 py-2"
-					data-testid="transaction-filter-banner"
-				>
-					<p className="text-sm text-foreground">{filterSummary}</p>
-					<Button
-						type="button"
-						variant="ghost"
-						size="sm"
-						onClick={clearFilters}
-						data-testid="transaction-filter-clear"
-					>
-						Clear
-					</Button>
-				</div>
-			) : null}
+			<TransactionFilters value={filters} onChange={handleFiltersChange} />
 
-			<div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-				<TransactionFilters
-					value={filters}
-					onChange={handleFiltersChange}
-				/>
+			<div className="min-w-0 space-y-3">
+				{isLoading ? (
+					<div className="space-y-0 overflow-hidden rounded-xl border border-border">
+						<Skeleton className="h-10 w-full rounded-none" />
+						<Skeleton className="h-16 w-full rounded-none" />
+						<Skeleton className="h-16 w-full rounded-none" />
+						<Skeleton className="h-16 w-full rounded-none" />
+					</div>
+				) : null}
 
-				<div className="min-w-0 flex-1 space-y-3">
-					{isLoading ? (
-						<div className="space-y-0 overflow-hidden rounded-xl border border-border">
-							<Skeleton className="h-10 w-full rounded-none" />
-							<Skeleton className="h-16 w-full rounded-none" />
-							<Skeleton className="h-16 w-full rounded-none" />
-							<Skeleton className="h-16 w-full rounded-none" />
-						</div>
-					) : null}
+				{isError ? (
+					<ErrorState
+						title="Could not load transactions"
+						description="Check your connection and try again."
+						onRetry={() => void refetch()}
+					/>
+				) : null}
 
-					{isError ? (
-						<ErrorState
-							title="Could not load transactions"
-							description="Check your connection and try again."
-							onRetry={() => void refetch()}
+				{empty ? (
+					<EmptyState
+						title={filteredEmpty ? 'No matching transactions' : 'No transactions yet'}
+						description={
+							filteredEmpty
+								? 'Try adjusting or clearing your filters.'
+								: 'Add your first income or expense to start tracking.'
+						}
+						icon={Receipt}
+						action={
+							filteredEmpty ? undefined : (
+								<Button type="button" onClick={openCreate}>
+									<Plus className="size-4" />
+									New Transaction
+								</Button>
+							)
+						}
+					/>
+				) : null}
+
+				{!isLoading && !isError && items.length > 0 ? (
+					<>
+						<TransactionList
+							items={items}
+							categoryLabels={categoryLabels}
+							preferredCurrency={preferredCurrency}
+							onEdit={openEdit}
+							onDelete={setDeleting}
 						/>
-					) : null}
 
-					{empty ? (
-						<EmptyState
-							title={filteredEmpty ? 'No matching transactions' : 'No transactions yet'}
-							description={
-								filteredEmpty
-									? 'Try adjusting or clearing your filters.'
-									: 'Add your first income or expense to start tracking.'
-							}
-							icon={Receipt}
-							action={
-								filteredEmpty ? undefined : (
-									<Button type="button" onClick={openCreate}>
-										<Plus className="size-4" />
-										New Transaction
-									</Button>
-								)
-							}
+						<NumberedPagination
+							page={pageNum}
+							totalPages={totalPages}
+							disabled={isFetching}
+							onPageChange={setPage}
 						/>
-					) : null}
-
-					{!isLoading && !isError && items.length > 0 ? (
-						<>
-							<TransactionList
-								items={items}
-								categoryLabels={categoryLabels}
-								preferredCurrency={preferredCurrency}
-								onEdit={openEdit}
-								onDelete={setDeleting}
-							/>
-
-							<NumberedPagination
-								page={pageNum}
-								totalPages={totalPages}
-								disabled={isFetching}
-								onPageChange={setPage}
-							/>
-						</>
-					) : null}
-				</div>
+					</>
+				) : null}
 			</div>
 
 			<TransactionFormDialog

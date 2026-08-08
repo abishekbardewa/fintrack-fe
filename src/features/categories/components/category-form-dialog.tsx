@@ -112,7 +112,7 @@ function CategoryFormFields({
 					data-testid="category-name-input"
 				/>
 				{error ? (
-					<p id={errorId} className="text-sm text-destructive" role="alert">
+					<p id={errorId} className="text-[10px] leading-tight text-destructive" role="alert">
 						{error}
 					</p>
 				) : null}

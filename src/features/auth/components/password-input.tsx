@@ -43,7 +43,7 @@ export function PasswordInput({ label, error, id, className, disabled, ...props 
 				</Button>
 			</div>
 			{error ? (
-				<p id={errorId} className="text-sm text-destructive" role="alert">
+				<p id={errorId} className="text-[10px] leading-tight text-destructive" role="alert">
 					{error}
 				</p>
 			) : null}

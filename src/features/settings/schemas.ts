@@ -15,6 +15,8 @@ export const currencyFormSchema = z.object({
 	currency: z.string().min(1, 'Select a currency'),
 });
 
+export const profileFormSchema = profileNameSchema.merge(currencyFormSchema);
+
 export const changePasswordSchema = z
 	.object({
 		currentPassword: z.string().min(1, 'Current password is required'),
@@ -27,6 +29,7 @@ export const changePasswordSchema = z
 
 export type ProfileNameValues = z.infer<typeof profileNameSchema>;
 export type CurrencyFormValues = z.infer<typeof currencyFormSchema>;
+export type ProfileFormValues = z.infer<typeof profileFormSchema>;
 export type ChangePasswordValues = z.infer<typeof changePasswordSchema>;
 
 export function fieldErrorsFromSchema<T extends z.ZodType>(

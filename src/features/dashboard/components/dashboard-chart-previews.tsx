@@ -140,12 +140,12 @@ export function DashboardChartPreviews({
 	return (
 		<div className="space-y-4" data-testid="dashboard-charts">
 			<ChartCard title="Spending by category" hint={compareHint} chartClassName="min-h-auto">
-				<div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-x-24 md:gap-y-8">
+				<div className="grid grid-cols-1 gap-8 xl:grid-cols-2 xl:gap-6">
 					{[categoryCompare.a, categoryCompare.b].map((side) => (
-						<div key={side.key} className="min-w-0 space-y-2">
+						<div key={side.key} className="min-w-0 space-y-3">
 							<p className="text-xs font-medium text-foreground">{side.label}</p>
-							<div className="flex items-center justify-between gap-6">
-								<div className="aspect-square w-full min-w-44 max-w-72 shrink grow basis-48">
+							<div className="flex flex-col gap-4">
+								<div className="mx-auto aspect-square w-full max-w-52">
 									<Doughnut
 										data={{
 											labels: side.byCategory.map((c) => c.name),
@@ -181,21 +181,21 @@ export function DashboardChartPreviews({
 									/>
 								</div>
 
-								<div className="w-48 shrink-0 space-y-2.5">
+								<div className="min-w-0 space-y-2.5">
 									<ul className="space-y-1 text-xs">
-										<li className="flex items-center justify-between gap-4">
+										<li className="flex items-center justify-between gap-3">
 											<span className="text-muted-foreground">Income</span>
 											<span className="tabular-nums font-medium text-income">
 												{formatMoney(side.income, currency)}
 											</span>
 										</li>
-										<li className="flex items-center justify-between gap-4">
+										<li className="flex items-center justify-between gap-3">
 											<span className="text-muted-foreground">Spent</span>
 											<span className="tabular-nums font-medium text-foreground">
 												{formatMoney(side.expense, currency)}
 											</span>
 										</li>
-										<li className="flex items-center justify-between gap-4 border-b border-border/60 pb-2">
+										<li className="flex items-center justify-between gap-3 border-b border-border/60 pb-2">
 											<span className="text-muted-foreground">Net</span>
 											<span
 												className={cn(
@@ -208,11 +208,11 @@ export function DashboardChartPreviews({
 										</li>
 									</ul>
 
-									<ul className="space-y-1">
+									<ul className="space-y-1.5">
 										{side.byCategory.map((slice, i) => (
 											<li
 												key={slice.categoryId ?? `${side.key}-other`}
-												className="flex items-center justify-between gap-4 text-xs"
+												className="flex min-w-0 items-start justify-between gap-3 text-xs"
 											>
 												<span className="flex min-w-0 items-center gap-1.5">
 													<span
@@ -225,7 +225,7 @@ export function DashboardChartPreviews({
 													/>
 													<span className="truncate text-foreground">{slice.name}</span>
 												</span>
-												<span className="shrink-0 tabular-nums text-muted-foreground">
+												<span className="shrink-0 text-right tabular-nums text-muted-foreground">
 													{formatMoney(slice.amount, currency)}
 													<span className="ml-1 opacity-70">{slice.percent}%</span>
 												</span>

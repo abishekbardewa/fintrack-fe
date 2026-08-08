@@ -174,7 +174,11 @@ export function TrendsPage() {
 
 			{data ? (
 				<>
-					<TrendsSummaryCards summary={data.summary} currency={data.currency} />
+					<TrendsSummaryCards
+						summary={data.summary}
+						currency={data.currency}
+						range={range}
+					/>
 
 					<TrendsChartPreviews
 						series={data.series}

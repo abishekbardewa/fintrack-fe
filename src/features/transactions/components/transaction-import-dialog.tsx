@@ -50,7 +50,7 @@ interface TransactionImportDialogProps {
 
 function CellError({ message }: { message?: string }) {
 	if (!message) return null;
-	return <p className="mt-1 text-[11px] leading-tight text-destructive">{message}</p>;
+	return <p className="mt-1 text-[10px] leading-tight text-destructive">{message}</p>;
 }
 
 const FIELD_CONTROL = 'h-8 rounded-lg';
@@ -284,7 +284,7 @@ export function TransactionImportDialog({
 
 						{parseError ? (
 							<p
-								className="text-sm text-destructive"
+								className="text-[10px] leading-tight text-destructive"
 								data-testid="transaction-import-parse-error"
 							>
 								{parseError}
@@ -320,7 +320,7 @@ export function TransactionImportDialog({
 						) : null}
 
 						{submitError ? (
-							<p className="text-sm text-destructive" data-testid="transaction-import-error">
+							<p className="text-[10px] leading-tight text-destructive" data-testid="transaction-import-error">
 								{submitError}
 							</p>
 						) : null}

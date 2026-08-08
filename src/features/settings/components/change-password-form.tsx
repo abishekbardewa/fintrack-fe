@@ -72,13 +72,9 @@ export function ChangePasswordForm() {
 	};
 
 	return (
-		<form onSubmit={handleSubmit} noValidate className="grid max-w-md gap-6">
-			<div>
-				<h2 className="text-lg font-semibold tracking-tight">Change Password</h2>
-			</div>
-
+		<form onSubmit={handleSubmit} noValidate className="grid gap-6">
 			<PasswordInput
-				id="settings-current-password"
+				id="change-password-current"
 				label="Current password"
 				name="currentPassword"
 				autoComplete="current-password"
@@ -86,11 +82,11 @@ export function ChangePasswordForm() {
 				onChange={(e) => setField('currentPassword', e.target.value)}
 				disabled={pending}
 				error={errors.currentPassword}
-				data-testid="settings-current-password"
+				data-testid="change-password-current"
 			/>
 
 			<PasswordInput
-				id="settings-new-password"
+				id="change-password-new"
 				label="New password"
 				name="newPassword"
 				autoComplete="new-password"
@@ -98,7 +94,7 @@ export function ChangePasswordForm() {
 				onChange={(e) => setField('newPassword', e.target.value)}
 				disabled={pending}
 				error={errors.newPassword}
-				data-testid="settings-new-password"
+				data-testid="change-password-new"
 			/>
 
 			<div className="flex flex-wrap items-center justify-end gap-2 border-t border-border pt-4">
@@ -107,18 +103,18 @@ export function ChangePasswordForm() {
 					variant="ghost"
 					onClick={handleCancel}
 					disabled={pending}
-					data-testid="settings-password-cancel"
+					data-testid="change-password-cancel"
 				>
 					Cancel
 				</Button>
-				<Button type="submit" disabled={pending} data-testid="settings-password-save">
+				<Button type="submit" disabled={pending} data-testid="change-password-save">
 					{pending ? (
 						<>
 							<Loader2 className="animate-spin" />
 							Updating…
 						</>
 					) : (
-						'Update Password'
+						'Update password'
 					)}
 				</Button>
 			</div>

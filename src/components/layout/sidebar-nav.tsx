@@ -22,10 +22,9 @@ export function SidebarNav({ collapsed, onCollapsedChange }: SidebarNavProps) {
 			aria-hidden={collapsed}
 			data-collapsed={collapsed ? 'true' : 'false'}
 		>
-			<div className="flex items-center gap-2 px-3 py-4">
+			<div className="flex items-center gap-2 px-3 pt-4 pb-7">
 				<div className="min-w-0 flex-1">
-					<BrandMark size="sm" />
-					<p className="mt-1 truncate text-xs text-muted-foreground">Personal finance</p>
+					<BrandMark />
 				</div>
 				<Button
 					type="button"
@@ -40,7 +39,7 @@ export function SidebarNav({ collapsed, onCollapsedChange }: SidebarNavProps) {
 				</Button>
 			</div>
 
-			<div className="px-3 pb-3">
+			<div className="px-3 pb-5">
 				<Button asChild className="w-full justify-start gap-2" data-testid="add-transaction-sidebar">
 					<Link to="/transactions?add=1">
 						<Plus className="size-4" />
@@ -49,7 +48,7 @@ export function SidebarNav({ collapsed, onCollapsedChange }: SidebarNavProps) {
 				</Button>
 			</div>
 
-			<nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pb-3 scrollbar-hidden">
+			<nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pt-1 pb-3 scrollbar-hidden">
 				{NAV_ITEMS.map((item) => {
 					const Icon = item.icon;
 					return (

@@ -1,25 +1,17 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, ListFilter, Plus, Wallet } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useAppSelector } from '@/app/hooks';
 import { EmptyState } from '@/components/common/empty-state';
 import { ErrorState } from '@/components/common/error-state';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { selectUser } from '@/features/auth/authSlice';
 import { BudgetDeleteDialog } from '@/features/budgets/components/budget-delete-dialog';
 import { BudgetFormDialog } from '@/features/budgets/components/budget-form-dialog';
 import { BudgetList } from '@/features/budgets/components/budget-list';
+import { BudgetMonthFilter } from '@/features/budgets/components/budget-month-filter';
 import {
 	useBudgetsQuery,
 	useDeleteBudgetMutation,
@@ -27,19 +19,19 @@ import {
 } from '@/features/budgets/hooks/use-budgets';
 import type { Budget, UpsertBudgetRequest } from '@/features/budgets/types';
 import {
-	budgetMonthOptions,
-	budgetYearOptions,
 	canGoNextMonth,
 	canGoPrevMonth,
 	currentMonthParams,
 	isCurrentMonth,
 	monthLabel,
-	monthName,
 	shiftMonth,
 } from '@/features/budgets/utils';
 import { useCategoriesQuery } from '@/features/categories/hooks/use-categories';
 import { getErrorMessage } from '@/lib/api/errors';
 import { DEFAULT_CURRENCY } from '@/lib/currencies';
+
+const monthNavBtnClass =
+	'inline-flex size-10 items-center justify-center rounded-full border border-input/20 bg-muted shadow-xs transition-colors outline-none hover:bg-muted/80 focus-visible:border-primary/50 focus-visible:ring-[3px] focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-50';
 
 export function BudgetsPage() {
 	const user = useAppSelector(selectUser);
@@ -48,7 +40,6 @@ export function BudgetsPage() {
 	const current = currentMonthParams();
 	const [year, setYear] = useState(current.year);
 	const [month, setMonth] = useState(current.month);
-	const [filterOpen, setFilterOpen] = useState(false);
 
 	const listParams = { periodType: 'month' as const, year, month };
 	const currentListParams = {
@@ -102,8 +93,6 @@ export function BudgetsPage() {
 
 	const periodLabel = monthLabel(year, month);
 	const currentPeriodLabel = monthLabel(current.year, current.month);
-	const yearOptions = budgetYearOptions();
-	const monthOptions = budgetMonthOptions(year);
 
 	const goPrevMonth = () => {
 		if (!canGoPrevMonth(year, month)) return;
@@ -198,95 +187,40 @@ export function BudgetsPage() {
 					</button>
 				) : null}
 
-				<div className="flex items-center gap-1">
-					<Button
+				<div className="flex items-center gap-2">
+					<button
 						type="button"
-						variant="outline"
-						size="icon-sm"
+						className={monthNavBtnClass}
 						onClick={goPrevMonth}
 						disabled={!canGoPrevMonth(year, month)}
 						aria-label="Previous month"
 						data-testid="budget-prev-month"
 					>
 						<ChevronLeft className="size-4" />
-					</Button>
+					</button>
 					<p className="min-w-32 px-1 text-center text-sm font-semibold tracking-tight tabular-nums">
 						{periodLabel}
 					</p>
-					<Button
+					<button
 						type="button"
-						variant="outline"
-						size="icon-sm"
+						className={monthNavBtnClass}
 						onClick={goNextMonth}
 						disabled={!canGoNextMonth(year, month)}
 						aria-label="Next month"
 						data-testid="budget-next-month"
 					>
 						<ChevronRight className="size-4" />
-					</Button>
+					</button>
 				</div>
 
-				<Popover open={filterOpen} onOpenChange={setFilterOpen}>
-					<PopoverTrigger asChild>
-						<Button
-							type="button"
-							variant="outline"
-							size="icon-sm"
-							aria-label="Filter by month and year"
-							data-testid="budget-month-filter"
-						>
-							<ListFilter className="size-4" />
-						</Button>
-					</PopoverTrigger>
-					<PopoverContent align="end" className="w-72 space-y-3 p-4">
-						<p className="text-sm font-medium">Jump to month</p>
-						<div className="grid grid-cols-2 gap-3">
-							<div className="grid gap-1.5">
-								<Label htmlFor="budget-filter-year">Year</Label>
-								<Select
-									value={String(year)}
-									onValueChange={(value) => {
-										const nextYear = Number(value);
-										setYear(nextYear);
-										const allowed = budgetMonthOptions(nextYear);
-										if (!allowed.includes(month)) {
-											setMonth(allowed[allowed.length - 1] ?? 1);
-										}
-									}}
-								>
-									<SelectTrigger id="budget-filter-year" data-testid="budget-filter-year">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										{yearOptions.map((y) => (
-											<SelectItem key={y} value={String(y)}>
-												{y}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-							<div className="grid gap-1.5">
-								<Label htmlFor="budget-filter-month">Month</Label>
-								<Select
-									value={String(month)}
-									onValueChange={(value) => setMonth(Number(value))}
-								>
-									<SelectTrigger id="budget-filter-month" data-testid="budget-filter-month">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										{monthOptions.map((m) => (
-											<SelectItem key={m} value={String(m)}>
-												{monthName(m)}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-						</div>
-					</PopoverContent>
-				</Popover>
+				<BudgetMonthFilter
+					year={year}
+					month={month}
+					onChange={({ year: nextYear, month: nextMonth }) => {
+						setYear(nextYear);
+						setMonth(nextMonth);
+					}}
+				/>
 			</div>
 
 			{isLoading ? (

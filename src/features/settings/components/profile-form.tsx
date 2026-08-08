@@ -2,7 +2,9 @@ import { useState, type FormEvent } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
 	Select,
@@ -15,35 +17,38 @@ import type { AuthUser } from '@/features/auth/types';
 import { useCurrenciesQuery } from '@/features/currencies/hooks/use-currencies';
 import { useUpdateMeMutation } from '@/features/settings/hooks/use-profile';
 import {
-	currencyFormSchema,
 	fieldErrorsFromSchema,
-	type CurrencyFormValues,
+	profileFormSchema,
+	type ProfileFormValues,
 } from '@/features/settings/schemas';
+import { userInitials } from '@/features/settings/utils';
 import { getErrorMessage, getFieldErrors } from '@/lib/api/errors';
 import { DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from '@/lib/currencies';
 
-interface CurrencyFormProps {
+interface ProfileFormProps {
 	user: AuthUser;
 }
 
-const CURRENCY_FIELDS = ['currency'] as const;
+const PROFILE_FIELDS = ['name', 'currency'] as const;
 
-export function CurrencyForm({ user }: CurrencyFormProps) {
+export function ProfileForm({ user }: ProfileFormProps) {
 	return (
-		<CurrencyFormFields
-			key={`${user.id}:${user.updatedAt ?? ''}:${user.currency ?? ''}`}
+		<ProfileFormFields
+			key={`${user.id}:${user.updatedAt ?? ''}:${user.name}:${user.currency ?? ''}`}
 			user={user}
 		/>
 	);
 }
 
-function CurrencyFormFields({ user }: CurrencyFormProps) {
+function ProfileFormFields({ user }: ProfileFormProps) {
 	const updateMutation = useUpdateMeMutation();
 	const currenciesQuery = useCurrenciesQuery(true);
+	const initialName = user.name ?? '';
 	const initialCurrency = user.currency || DEFAULT_CURRENCY;
 
+	const [name, setName] = useState(initialName);
 	const [currency, setCurrency] = useState(initialCurrency);
-	const [errors, setErrors] = useState<Partial<Record<keyof CurrencyFormValues, string>>>({});
+	const [errors, setErrors] = useState<Partial<Record<keyof ProfileFormValues, string>>>({});
 
 	const currencyOptions =
 		currenciesQuery.data?.currencies?.length
@@ -51,49 +56,90 @@ function CurrencyFormFields({ user }: CurrencyFormProps) {
 			: SUPPORTED_CURRENCIES;
 
 	const pending = updateMutation.isPending;
-	const dirty = currency !== initialCurrency;
+	const dirty =
+		name.trim() !== initialName.trim() || currency !== initialCurrency;
 
 	const handleCancel = () => {
+		setName(initialName);
 		setCurrency(initialCurrency);
 		setErrors({});
 	};
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
-		const values = { currency };
-		const fieldErrors = fieldErrorsFromSchema(currencyFormSchema, values);
+		const values = { name, currency };
+		const fieldErrors = fieldErrorsFromSchema(profileFormSchema, values);
 		if (Object.keys(fieldErrors).length > 0) {
 			setErrors(fieldErrors);
 			return;
 		}
 
-		const parsed = currencyFormSchema.parse(values);
-		if (parsed.currency === initialCurrency) {
+		const parsed = profileFormSchema.parse(values);
+		const nameChanged = parsed.name !== initialName.trim();
+		const currencyChanged = parsed.currency !== initialCurrency;
+		if (!nameChanged && !currencyChanged) {
 			toast.message('No changes to save');
 			return;
 		}
 
 		try {
-			await updateMutation.mutateAsync({ currency: parsed.currency });
-			toast.success('Currency updated');
+			await updateMutation.mutateAsync({
+				...(nameChanged ? { name: parsed.name } : {}),
+				...(currencyChanged ? { currency: parsed.currency } : {}),
+			});
+			toast.success('Profile updated');
 		} catch (error) {
-			const apiFields = getFieldErrors(error, CURRENCY_FIELDS);
+			const apiFields = getFieldErrors(error, PROFILE_FIELDS);
 			if (Object.keys(apiFields).length > 0) {
 				setErrors(apiFields);
 				return;
 			}
-			toast.error(getErrorMessage(error, 'Could not update currency.'));
+			toast.error(getErrorMessage(error, 'Could not update profile.'));
 		}
 	};
 
 	return (
 		<form onSubmit={handleSubmit} noValidate className="grid gap-6">
-			<div>
-				<h2 className="text-lg font-semibold tracking-tight">Preferred Currency</h2>
+			<Avatar className="size-20">
+				<AvatarFallback className="bg-primary/10 text-lg font-semibold text-primary">
+					{userInitials(user.name)}
+				</AvatarFallback>
+			</Avatar>
+
+			<div className="grid gap-2">
+				<Label htmlFor="profile-name">Name</Label>
+				<Input
+					id="profile-name"
+					value={name}
+					onChange={(e) => {
+						setName(e.target.value);
+						if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+					}}
+					disabled={pending}
+					aria-invalid={Boolean(errors.name)}
+					autoComplete="name"
+					data-testid="profile-name"
+				/>
+				{errors.name ? (
+					<p className="text-[10px] leading-tight text-destructive" role="alert">
+						{errors.name}
+					</p>
+				) : null}
 			</div>
 
-			<div className="grid max-w-md gap-2">
-				<Label htmlFor="settings-currency">Currency</Label>
+			<div className="grid gap-2">
+				<Label htmlFor="profile-email">Email</Label>
+				<Input
+					id="profile-email"
+					value={user.email ?? ''}
+					disabled
+					readOnly
+					data-testid="profile-email"
+				/>
+			</div>
+
+			<div className="grid gap-2">
+				<Label htmlFor="profile-currency">Currency</Label>
 				<Select
 					value={currency}
 					onValueChange={(v) => {
@@ -103,10 +149,10 @@ function CurrencyFormFields({ user }: CurrencyFormProps) {
 					disabled={pending || currenciesQuery.isLoading}
 				>
 					<SelectTrigger
-						id="settings-currency"
+						id="profile-currency"
 						className="w-full"
 						aria-invalid={Boolean(errors.currency)}
-						data-testid="settings-currency"
+						data-testid="profile-currency"
 					>
 						<SelectValue placeholder="Select currency" />
 					</SelectTrigger>
@@ -120,7 +166,7 @@ function CurrencyFormFields({ user }: CurrencyFormProps) {
 					</SelectContent>
 				</Select>
 				{errors.currency ? (
-					<p className="text-sm text-destructive" role="alert">
+					<p className="text-[10px] leading-tight text-destructive" role="alert">
 						{errors.currency}
 					</p>
 				) : null}
@@ -132,18 +178,18 @@ function CurrencyFormFields({ user }: CurrencyFormProps) {
 					variant="ghost"
 					onClick={handleCancel}
 					disabled={pending || !dirty}
-					data-testid="settings-currency-cancel"
+					data-testid="profile-cancel"
 				>
 					Cancel
 				</Button>
-				<Button type="submit" disabled={pending || !dirty} data-testid="settings-currency-save">
+				<Button type="submit" disabled={pending || !dirty} data-testid="profile-save">
 					{pending ? (
 						<>
 							<Loader2 className="animate-spin" />
 							Saving…
 						</>
 					) : (
-						'Save Changes'
+						'Save changes'
 					)}
 				</Button>
 			</div>

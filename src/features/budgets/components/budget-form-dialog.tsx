@@ -218,7 +218,7 @@ function BudgetFormFields({
 								))}
 							</SelectContent>
 						</Select>
-						{errors.target ? <p className="text-sm text-destructive">{errors.target}</p> : null}
+						{errors.target ? <p className="text-[10px] leading-tight text-destructive">{errors.target}</p> : null}
 						{availableOptions.length === 0 ? (
 							<p className="text-xs text-muted-foreground">
 								All budgets for this month are already set.
@@ -244,7 +244,7 @@ function BudgetFormFields({
 						data-testid="budget-limit-input"
 					/>
 					{errors.limitAmount ? (
-						<p className="text-sm text-destructive">{errors.limitAmount}</p>
+						<p className="text-[10px] leading-tight text-destructive">{errors.limitAmount}</p>
 					) : null}
 				</div>
 			</div>

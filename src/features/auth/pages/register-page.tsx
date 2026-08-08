@@ -182,7 +182,7 @@ export function RegisterPage() {
 						</SelectContent>
 					</Select>
 					{state.fieldErrors.currency ? (
-						<p id={currencyErrorId} className="text-sm text-destructive" role="alert">
+						<p id={currencyErrorId} className="text-[10px] leading-tight text-destructive" role="alert">
 							{state.fieldErrors.currency}
 						</p>
 					) : null}
