@@ -24,7 +24,7 @@ export const IMPORT_TEMPLATE_XLSX_FILENAME = 'fintrack-transactions-import-templ
 
 function csvEscape(value: string) {
 	if (/[",\n\r]/.test(value)) {
-		return `"${value.replaceAll('"', '""')}"`;
+		return `"${value.replace(/"/g, '""')}"`;
 	}
 	return value;
 }
