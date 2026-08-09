@@ -55,3 +55,45 @@ export interface TransactionListParams {
 export interface SuggestDescriptionsData {
 	descriptions: string[];
 }
+
+export type TransactionExportFormat = 'csv' | 'xlsx';
+
+export type TransactionExportPreset = 'this_month' | 'last_month' | 'last_3_months';
+
+export interface TransactionExportParams {
+	format: TransactionExportFormat;
+	preset?: TransactionExportPreset;
+	from?: string;
+	to?: string;
+	q?: string;
+	type?: TransactionType | '';
+	categoryId?: string;
+	subcategoryId?: string;
+	currency?: string;
+	minAmount?: number;
+	maxAmount?: number;
+}
+
+export interface TransactionExportFile {
+	blob: Blob;
+	filename: string;
+}
+
+export interface ImportTransactionRowRequest {
+	date: string;
+	type: TransactionType;
+	categoryId: string;
+	subcategoryId?: string | null;
+	amount: number;
+	currency?: string;
+	description?: string;
+}
+
+export interface ImportTransactionsRequest {
+	transactions: ImportTransactionRowRequest[];
+}
+
+export interface ImportTransactionsData {
+	imported: number;
+	items: Transaction[];
+}

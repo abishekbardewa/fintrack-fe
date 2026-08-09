@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import {
-	Activity,
 	FolderTree,
+	LayoutDashboard,
 	Receipt,
 	Sparkles,
 	Target,
@@ -17,13 +17,13 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-	{ title: 'Pulse', href: '/pulse', icon: Activity, primary: true },
+	{ title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, primary: true },
 	{ title: 'Transactions', href: '/transactions', icon: Receipt, primary: true },
 	{ title: 'Budgets', href: '/budgets', icon: Wallet, primary: true },
 	{ title: 'Goals', href: '/goals', icon: Target, primary: true },
 	{ title: 'Categories', href: '/categories', icon: FolderTree },
 	{ title: 'Trends', href: '/trends', icon: TrendingUp },
-	{ title: 'Reviews', href: '/reviews', icon: Sparkles },
+	{ title: 'AI Review', href: '/reviews', icon: Sparkles },
 ];
 
 export const PRIMARY_NAV_ITEMS = NAV_ITEMS.filter((item) => item.primary);

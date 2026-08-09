@@ -32,8 +32,7 @@ export function CategoryDeleteDialog({
 				<AlertDialogHeader>
 					<AlertDialogTitle>Delete category?</AlertDialogTitle>
 					<AlertDialogDescription>
-						Delete &ldquo;{categoryName}&rdquo;? This cannot be undone. Categories in use by
-						transactions, or mains that still have subcategories, cannot be deleted.
+						Delete &ldquo;{categoryName}&rdquo;? This cannot be undone.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

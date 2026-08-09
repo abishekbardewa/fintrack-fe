@@ -17,7 +17,7 @@ export function GuestRoute() {
 	const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
 	if (isAuthenticated) {
-		return <Navigate to="/pulse" replace />;
+		return <Navigate to="/dashboard" replace />;
 	}
 
 	return <Outlet />;

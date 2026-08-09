@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import { useAppSelector } from '@/app/hooks';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
 	Dialog,
 	DialogContent,
@@ -234,11 +235,20 @@ function TransactionFormFields({
 						);
 					})}
 				</div>
-				{errors.type ? <p className="-mt-3 text-sm text-destructive">{errors.type}</p> : null}
+				{errors.type ? (
+					<p className="-mt-3 text-[10px] leading-tight text-destructive">{errors.type}</p>
+				) : null}
 
-				<div className="grid gap-4 sm:grid-cols-2">
-					<div className="grid gap-2">
-						<Label htmlFor="tx-amount">Amount</Label>
+				<div className="grid gap-2">
+					<Label htmlFor="tx-amount">Amount</Label>
+					<div
+						className={cn(
+							'flex h-10 overflow-hidden rounded-lg border border-input/20 bg-muted shadow-xs transition-[color,box-shadow]',
+							'focus-within:border-primary/50 focus-within:ring-[3px] focus-within:ring-primary/30',
+							(errors.amount || errors.currency) &&
+								'border-destructive ring-destructive/20 focus-within:border-destructive focus-within:ring-destructive/20',
+						)}
+					>
 						<Input
 							id="tx-amount"
 							type="number"
@@ -252,12 +262,8 @@ function TransactionFormFields({
 							}
 							disabled={pending}
 							aria-invalid={Boolean(errors.amount)}
-							className="tabular-nums"
+							className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:border-transparent focus-visible:ring-0 tabular-nums"
 						/>
-						{errors.amount ? <p className="text-sm text-destructive">{errors.amount}</p> : null}
-					</div>
-					<div className="grid gap-2">
-						<Label htmlFor="tx-currency">Currency</Label>
 						<Select
 							value={values.currency}
 							onValueChange={(v) => setField('currency', v as TransactionFormValues['currency'])}
@@ -265,12 +271,14 @@ function TransactionFormFields({
 						>
 							<SelectTrigger
 								id="tx-currency"
-								className="w-full"
+								aria-label="Currency"
 								aria-invalid={Boolean(errors.currency)}
+								className="h-full w-auto shrink-0 rounded-none border-0 border-l border-input/20 bg-transparent px-3 shadow-none focus-visible:border-transparent focus-visible:ring-0"
+								data-testid="tx-currency"
 							>
 								<SelectValue />
 							</SelectTrigger>
-							<SelectContent>
+							<SelectContent align="end">
 								{SUPPORTED_CURRENCIES.map((c) => (
 									<SelectItem key={c.code} value={c.code}>
 										{c.code} ({c.symbol})
@@ -278,59 +286,64 @@ function TransactionFormFields({
 								))}
 							</SelectContent>
 						</Select>
-						{errors.currency ? (
-							<p className="text-sm text-destructive">{errors.currency}</p>
-						) : null}
 					</div>
+					{errors.amount ? (
+						<p className="text-[10px] leading-tight text-destructive">{errors.amount}</p>
+					) : null}
+					{errors.currency ? (
+						<p className="text-[10px] leading-tight text-destructive">{errors.currency}</p>
+					) : null}
 				</div>
 
-				<div className="grid gap-4 sm:grid-cols-2">
-					<div className="grid gap-2">
-						<Label htmlFor="tx-category">Category</Label>
-						<Select
-							value={values.categoryId || undefined}
-							onValueChange={handleCategoryChange}
-							disabled={pending}
-						>
-							<SelectTrigger
-								id="tx-category"
-								className="w-full"
-								aria-invalid={Boolean(errors.categoryId)}
+				<div className="grid gap-2">
+					<div className="grid items-start gap-4 sm:grid-cols-2">
+						<div className="grid gap-2">
+							<Label htmlFor="tx-category">Category</Label>
+							<Select
+								value={values.categoryId || undefined}
+								onValueChange={handleCategoryChange}
+								disabled={pending}
 							>
-								<SelectValue placeholder="Select category" />
-							</SelectTrigger>
-							<SelectContent>
-								{tree.map((c) => (
-									<SelectItem key={c.id} value={c.id}>
-										{c.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						{errors.categoryId ? (
-							<p className="text-sm text-destructive">{errors.categoryId}</p>
-						) : null}
+								<SelectTrigger
+									id="tx-category"
+									className="w-full"
+									aria-invalid={Boolean(errors.categoryId)}
+								>
+									<SelectValue placeholder="Select category" />
+								</SelectTrigger>
+								<SelectContent>
+									{tree.map((c) => (
+										<SelectItem key={c.id} value={c.id}>
+											{c.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="tx-subcategory">Subcategory</Label>
+							<Select
+								value={values.subcategoryId || '__none__'}
+								onValueChange={(v) => setField('subcategoryId', v === '__none__' ? '' : v)}
+								disabled={pending || !values.categoryId || subs.length === 0}
+							>
+								<SelectTrigger id="tx-subcategory" className="w-full">
+									<SelectValue placeholder={subs.length ? 'Optional' : 'No subcategories'} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="__none__">None</SelectItem>
+									{subs.map((c) => (
+										<SelectItem key={c.id} value={c.id}>
+											{c.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
 					</div>
-					<div className="grid gap-2">
-						<Label htmlFor="tx-subcategory">Subcategory</Label>
-						<Select
-							value={values.subcategoryId || '__none__'}
-							onValueChange={(v) => setField('subcategoryId', v === '__none__' ? '' : v)}
-							disabled={pending || !values.categoryId || subs.length === 0}
-						>
-							<SelectTrigger id="tx-subcategory" className="w-full">
-								<SelectValue placeholder={subs.length ? 'Optional' : 'No subcategories'} />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="__none__">None</SelectItem>
-								{subs.map((c) => (
-									<SelectItem key={c.id} value={c.id}>
-										{c.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
+					{errors.categoryId ? (
+						<p className="text-[10px] leading-tight text-destructive">{errors.categoryId}</p>
+					) : null}
 				</div>
 
 				<div className="grid gap-2">
@@ -345,7 +358,7 @@ function TransactionFormFields({
 						invalid={Boolean(errors.description)}
 					/>
 					{errors.description ? (
-						<p className="text-sm text-destructive">{errors.description}</p>
+						<p className="text-[10px] leading-tight text-destructive">{errors.description}</p>
 					) : null}
 					{suggestionsQuery.data?.descriptions?.length ? (
 						<div className="flex flex-wrap gap-2">
@@ -371,15 +384,17 @@ function TransactionFormFields({
 
 				<div className="grid gap-2">
 					<Label htmlFor="tx-date">Date</Label>
-					<Input
+					<DatePicker
 						id="tx-date"
-						type="date"
 						value={values.date}
-						onChange={(e) => setField('date', e.target.value)}
+						onChange={(v) => setField('date', v)}
 						disabled={pending}
-						aria-invalid={Boolean(errors.date)}
+						invalid={Boolean(errors.date)}
+						aria-label="Transaction date"
 					/>
-					{errors.date ? <p className="text-sm text-destructive">{errors.date}</p> : null}
+					{errors.date ? (
+						<p className="text-[10px] leading-tight text-destructive">{errors.date}</p>
+					) : null}
 				</div>
 			</div>
 

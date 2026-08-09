@@ -5,5 +5,5 @@ import { selectIsAuthenticated } from '@/features/auth/authSlice';
 
 export function HomeRedirect() {
 	const isAuthenticated = useAppSelector(selectIsAuthenticated);
-	return <Navigate to={isAuthenticated ? '/pulse' : '/login'} replace />;
+	return <Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />;
 }

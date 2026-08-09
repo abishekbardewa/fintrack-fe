@@ -6,6 +6,7 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { store } from '@/app/store';
+import { AuthQueryCacheReset } from '@/features/auth/components/auth-query-cache-reset';
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -31,6 +32,7 @@ export function AppProviders({ children }: AppProvidersProps) {
 		>
 			<ReduxProvider store={store}>
 				<QueryClientProvider client={queryClient}>
+					<AuthQueryCacheReset />
 					<TooltipProvider delayDuration={300}>
 						{children}
 						<Toaster richColors position="top-right" />

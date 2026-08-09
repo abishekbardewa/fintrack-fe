@@ -1,39 +1,66 @@
-import { FolderTree } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Plus } from 'lucide-react';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CategoryKindPanel } from '@/features/categories/components/category-kind-panel';
+import { Button } from '@/components/ui/button';
+import {
+	CategoryKindPanel,
+	type CategoryKindPanelHandle,
+} from '@/features/categories/components/category-kind-panel';
+import type { CategoryKind } from '@/features/categories/types';
+import { cn } from '@/lib/utils';
+
+const KIND_FILTERS: { value: CategoryKind; label: string }[] = [
+	{ value: 'expense', label: 'Expense' },
+	{ value: 'income', label: 'Income' },
+];
 
 export function CategoriesPage() {
+	const [kind, setKind] = useState<CategoryKind>('expense');
+	const panelRef = useRef<CategoryKindPanelHandle>(null);
+	const addLabel = kind === 'expense' ? 'New Expense Category' : 'New Income Category';
+
 	return (
 		<div className="flex flex-col gap-6">
-			<header className="flex items-start gap-3">
-				<span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-					<FolderTree className="size-5" aria-hidden="true" />
-				</span>
+			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
 					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Categories</h1>
-					<p className="mt-1 text-sm text-muted-foreground">
-						Organize income and expense into mains and one level of subcategories.
-					</p>
+					<p className="mt-1 text-sm text-muted-foreground">Group income and expenses.</p>
 				</div>
+				<Button
+					type="button"
+					onClick={() => panelRef.current?.openCreateMain()}
+					data-testid={`add-main-category-${kind}`}
+				>
+					<Plus className="size-4" />
+					{addLabel}
+				</Button>
 			</header>
 
-			<Tabs defaultValue="expense">
-				<TabsList>
-					<TabsTrigger value="expense" data-testid="categories-tab-expense">
-						Expense
-					</TabsTrigger>
-					<TabsTrigger value="income" data-testid="categories-tab-income">
-						Income
-					</TabsTrigger>
-				</TabsList>
-				<TabsContent value="expense" className="mt-4">
-					<CategoryKindPanel kind="expense" />
-				</TabsContent>
-				<TabsContent value="income" className="mt-4">
-					<CategoryKindPanel kind="income" />
-				</TabsContent>
-			</Tabs>
+			<div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter by kind">
+				{KIND_FILTERS.map((item) => {
+					const active = kind === item.value;
+					return (
+						<button
+							key={item.value}
+							type="button"
+							role="tab"
+							aria-selected={active}
+							onClick={() => setKind(item.value)}
+							className={cn(
+								'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
+								active
+									? 'bg-primary text-primary-foreground shadow-sm'
+									: 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+							)}
+							data-testid={`category-filter-${item.value}`}
+						>
+							{item.label}
+						</button>
+					);
+				})}
+			</div>
+
+			<CategoryKindPanel key={kind} ref={panelRef} kind={kind} />
 		</div>
 	);
 }

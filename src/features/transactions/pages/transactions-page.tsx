@@ -1,18 +1,25 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Receipt } from 'lucide-react';
+import { Plus, Receipt, Upload } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { useAppSelector } from '@/app/hooks';
 import { EmptyState } from '@/components/common/empty-state';
 import { ErrorState } from '@/components/common/error-state';
+import { NumberedPagination } from '@/components/common/numbered-pagination';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { selectUser } from '@/features/auth/authSlice';
 import { useCategoriesQuery } from '@/features/categories/hooks/use-categories';
 import { TransactionDeleteDialog } from '@/features/transactions/components/transaction-delete-dialog';
+import {
+	TransactionExportDialog,
+	type TransactionExportSelection,
+} from '@/features/transactions/components/transaction-export-dialog';
+import { TransactionExportMenu } from '@/features/transactions/components/transaction-export-menu';
 import { TransactionFilters } from '@/features/transactions/components/transaction-filters';
 import { TransactionFormDialog } from '@/features/transactions/components/transaction-form-dialog';
+import { TransactionImportDialog } from '@/features/transactions/components/transaction-import-dialog';
 import { TransactionList } from '@/features/transactions/components/transaction-list';
 import {
 	useDeleteTransactionMutation,
@@ -20,16 +27,17 @@ import {
 } from '@/features/transactions/hooks/use-transactions';
 import type { Transaction } from '@/features/transactions/types';
 import {
-	EMPTY_FILTERS,
 	draftToParams,
+	filtersFromSearchParams,
 	hasActiveFilters,
+	writeFiltersToSearchParams,
 	type TransactionFilterDraft,
 } from '@/features/transactions/utils';
 import { getErrorMessage } from '@/lib/api/errors';
 import { DEFAULT_CURRENCY } from '@/lib/currencies';
 import { useDebouncedValue } from '@/lib/hooks/use-debounced-value';
 
-const PAGE_LIMIT = 20;
+const PAGE_LIMIT = 10;
 
 export function TransactionsPage() {
 	const user = useAppSelector(selectUser);
@@ -37,13 +45,20 @@ export function TransactionsPage() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const addRequested = searchParams.get('add') === '1';
 
-	const [filters, setFilters] = useState<TransactionFilterDraft>(EMPTY_FILTERS);
+	const [filters, setFilters] = useState<TransactionFilterDraft>(() =>
+		filtersFromSearchParams(searchParams),
+	);
 	const [page, setPage] = useState(1);
 	const [manualFormOpen, setManualFormOpen] = useState(false);
 	const [editing, setEditing] = useState<Transaction | null>(null);
 	const [deleting, setDeleting] = useState<Transaction | null>(null);
+	const [exportSelection, setExportSelection] = useState<TransactionExportSelection | null>(
+		null,
+	);
+	const [importOpen, setImportOpen] = useState(false);
 
 	const formOpen = addRequested || manualFormOpen || editing != null;
+	const exportOpen = exportSelection != null;
 
 	const debouncedQ = useDebouncedValue(filters.q, 300);
 	const queryFilters = useMemo(
@@ -67,6 +82,8 @@ export function TransactionsPage() {
 		return map;
 	}, [categoriesData?.categories]);
 
+	const filtersActive = hasActiveFilters(filters);
+
 	const clearAddParam = () => {
 		if (!addRequested) return;
 		const next = new URLSearchParams(searchParams);
@@ -87,6 +104,7 @@ export function TransactionsPage() {
 	const handleFiltersChange = (next: TransactionFilterDraft) => {
 		setFilters(next);
 		setPage(1);
+		setSearchParams(writeFiltersToSearchParams(searchParams, next), { replace: true });
 	};
 
 	const openCreate = () => {
@@ -112,12 +130,9 @@ export function TransactionsPage() {
 
 	const items = data?.items ?? [];
 	const totalPages = data?.totalPages ?? 1;
-	const total = data?.total ?? 0;
 	const empty = !isLoading && !isError && items.length === 0;
-	const filteredEmpty = empty && hasActiveFilters(filters);
+	const filteredEmpty = empty && filtersActive;
 	const pageNum = data?.page ?? page;
-	const from = total === 0 ? 0 : (pageNum - 1) * PAGE_LIMIT + 1;
-	const to = Math.min(pageNum * PAGE_LIMIT, total);
 
 	const deleteLabel =
 		deleting?.description?.trim() ||
@@ -132,106 +147,86 @@ export function TransactionsPage() {
 						Review and manage your financial activity.
 					</p>
 				</div>
-				<Button type="button" onClick={openCreate} data-testid="transaction-add">
-					<Plus className="size-4" />
-					New Transaction
-				</Button>
+				<div className="flex flex-wrap items-center gap-2">
+					<Button type="button" onClick={openCreate} data-testid="transaction-add">
+						<Plus className="size-4" />
+						New Transaction
+					</Button>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => setImportOpen(true)}
+						data-testid="transaction-import"
+					>
+						<Upload className="size-4" />
+						Import
+					</Button>
+					<TransactionExportMenu
+						filtersActive={filtersActive}
+						onSelect={setExportSelection}
+					/>
+				</div>
 			</header>
 
-			<TransactionFilters
-				value={filters}
-				onChange={handleFiltersChange}
-				categoryLabels={categoryLabels}
-			/>
+			<TransactionFilters value={filters} onChange={handleFiltersChange} />
 
-			{isLoading ? (
-				<div className="space-y-0 overflow-hidden rounded-xl border border-border">
-					<Skeleton className="h-10 w-full rounded-none" />
-					<Skeleton className="h-16 w-full rounded-none" />
-					<Skeleton className="h-16 w-full rounded-none" />
-					<Skeleton className="h-16 w-full rounded-none" />
-				</div>
-			) : null}
-
-			{isError ? (
-				<ErrorState
-					title="Could not load transactions"
-					description="Check your connection and try again."
-					onRetry={() => void refetch()}
-				/>
-			) : null}
-
-			{empty ? (
-				<EmptyState
-					title={filteredEmpty ? 'No matching transactions' : 'No transactions yet'}
-					description={
-						filteredEmpty
-							? 'Try adjusting or clearing your filters.'
-							: 'Add your first income or expense to start tracking.'
-					}
-					icon={Receipt}
-					action={
-						filteredEmpty ? undefined : (
-							<Button type="button" onClick={openCreate}>
-								<Plus className="size-4" />
-								New Transaction
-							</Button>
-						)
-					}
-				/>
-			) : null}
-
-			{!isLoading && !isError && items.length > 0 ? (
-				<div className="space-y-3">
-					<div className="flex flex-wrap items-center justify-between gap-2">
-						<div>
-							<h2 className="text-base font-semibold tracking-tight">Recent Activity</h2>
-							<p className="text-sm text-muted-foreground">
-								Showing {from}–{to} of {total}
-								{isFetching ? <span className="ml-2 opacity-70">Updating…</span> : null}
-							</p>
-						</div>
+			<div className="min-w-0 space-y-3">
+				{isLoading ? (
+					<div className="space-y-0 overflow-hidden rounded-xl border border-border">
+						<Skeleton className="h-10 w-full rounded-none" />
+						<Skeleton className="h-16 w-full rounded-none" />
+						<Skeleton className="h-16 w-full rounded-none" />
+						<Skeleton className="h-16 w-full rounded-none" />
 					</div>
+				) : null}
 
-					<TransactionList
-						items={items}
-						categoryLabels={categoryLabels}
-						preferredCurrency={preferredCurrency}
-						onEdit={openEdit}
-						onDelete={setDeleting}
+				{isError ? (
+					<ErrorState
+						title="Could not load transactions"
+						description="Check your connection and try again."
+						onRetry={() => void refetch()}
 					/>
+				) : null}
 
-					{totalPages > 1 ? (
-						<div className="flex items-center justify-between gap-2">
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								disabled={page <= 1 || isFetching}
-								onClick={() => setPage((p) => Math.max(1, p - 1))}
-								data-testid="transaction-page-prev"
-							>
-								<ChevronLeft className="size-4" />
-								Previous
-							</Button>
-							<p className="text-sm text-muted-foreground">
-								Page {pageNum} of {totalPages}
-							</p>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								disabled={page >= totalPages || isFetching}
-								onClick={() => setPage((p) => p + 1)}
-								data-testid="transaction-page-next"
-							>
-								Next
-								<ChevronRight className="size-4" />
-							</Button>
-						</div>
-					) : null}
-				</div>
-			) : null}
+				{empty ? (
+					<EmptyState
+						title={filteredEmpty ? 'No matching transactions' : 'No transactions yet'}
+						description={
+							filteredEmpty
+								? 'Try adjusting or clearing your filters.'
+								: 'Add your first income or expense to start tracking.'
+						}
+						icon={Receipt}
+						action={
+							filteredEmpty ? undefined : (
+								<Button type="button" onClick={openCreate}>
+									<Plus className="size-4" />
+									New Transaction
+								</Button>
+							)
+						}
+					/>
+				) : null}
+
+				{!isLoading && !isError && items.length > 0 ? (
+					<>
+						<TransactionList
+							items={items}
+							categoryLabels={categoryLabels}
+							preferredCurrency={preferredCurrency}
+							onEdit={openEdit}
+							onDelete={setDeleting}
+						/>
+
+						<NumberedPagination
+							page={pageNum}
+							totalPages={totalPages}
+							disabled={isFetching}
+							onPageChange={setPage}
+						/>
+					</>
+				) : null}
+			</div>
 
 			<TransactionFormDialog
 				open={formOpen}
@@ -247,6 +242,23 @@ export function TransactionsPage() {
 				label={deleteLabel}
 				pending={deleteMutation.isPending}
 				onConfirm={() => void handleDelete()}
+			/>
+
+			<TransactionExportDialog
+				open={exportOpen}
+				onOpenChange={(open) => {
+					if (!open) setExportSelection(null);
+				}}
+				selection={exportSelection}
+				filters={filters}
+				categoryLabels={categoryLabels}
+			/>
+
+			<TransactionImportDialog
+				open={importOpen}
+				onOpenChange={setImportOpen}
+				categories={categoriesData?.categories ?? []}
+				preferredCurrency={preferredCurrency}
 			/>
 		</div>
 	);

@@ -3,42 +3,49 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-	--background: #fafafa;
-	--foreground: #171717;
+	--background: #f8f9fa;
+	--foreground: #191c1d;
 	--card: #ffffff;
-	--card-foreground: #171717;
+	--card-foreground: #191c1d;
 	--popover: #ffffff;
-	--popover-foreground: #171717;
-	--primary: #059669;
+	--popover-foreground: #191c1d;
+	--primary: #0040a1;
 	--primary-foreground: #ffffff;
-	--secondary: #f0f0f0;
-	--secondary-foreground: #171717;
-	--muted: #f4f4f5;
-	--muted-foreground: #71717a;
-	--accent: #f4f4f5;
-	--accent-foreground: #171717;
-	--destructive: #dc2626;
+	--primary-container: #0056d2;
+	--secondary: #edeeef;
+	--secondary-foreground: #191c1d;
+	--muted: #f3f4f5;
+	--muted-foreground: #424654;
+	--accent: #dae2ff;
+	--accent-foreground: #0040a1;
+	--destructive: #ba1a1a;
 	--destructive-foreground: #ffffff;
 	--income: #15803d;
 	--income-foreground: #ffffff;
 	--expense: #dc2626;
 	--expense-foreground: #ffffff;
-	--border: #e4e4e7;
-	--input: #e4e4e7;
-	--ring: #059669;
-	--chart-1: #059669;
-	--chart-2: #52525b;
-	--chart-3: #a1a1aa;
+	--balance-soft: #e8f2fc;
+	--income-soft: #e8eefc;
+	--expense-soft: #e5f6ea;
+	--feature: #0040a1;
+	--feature-foreground: #ffffff;
+	--border: #c3c6d6;
+	--input: #c3c6d6;
+	--ring: #0040a1;
+	--chart-1: #0040a1;
+	--chart-2: #4a5d8e;
+	--chart-3: #737785;
 	--chart-4: #15803d;
-	--chart-5: #2563eb;
-	--sidebar: #ffffff;
-	--sidebar-foreground: #3f3f46;
-	--sidebar-primary: #059669;
+	--chart-5: #0056d2;
+	--sidebar: #f3f4f5;
+	--sidebar-foreground: #424654;
+	--sidebar-primary: #0040a1;
 	--sidebar-primary-foreground: #ffffff;
-	--sidebar-accent: #f4f4f5;
-	--sidebar-accent-foreground: #171717;
-	--sidebar-border: #e4e4e7;
-	--sidebar-ring: #059669;
+	--sidebar-accent: #dae2ff;
+	--sidebar-accent-foreground: #0040a1;
+	--sidebar-border: #e1e3e4;
+	--sidebar-ring: #0040a1;
+	--header: #ffffff;
 	--font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
 	--font-serif: Source Serif 4, serif;
 	--font-mono: Fira Code, ui-monospace, monospace;
@@ -62,42 +69,49 @@
 }
 
 .dark {
-	--background: #0a0a0a;
-	--foreground: #fafafa;
-	--card: #111111;
-	--card-foreground: #fafafa;
-	--popover: #111111;
-	--popover-foreground: #fafafa;
-	--primary: #34d399;
-	--primary-foreground: #022c22;
-	--secondary: #1c1c1c;
-	--secondary-foreground: #fafafa;
-	--muted: #1c1c1c;
-	--muted-foreground: #a1a1aa;
-	--accent: #1c1c1c;
-	--accent-foreground: #fafafa;
-	--destructive: #ef4444;
-	--destructive-foreground: #fafafa;
+	--background: #060e20;
+	--foreground: #dee5ff;
+	--card: #0f1930;
+	--card-foreground: #dee5ff;
+	--popover: #0f1930;
+	--popover-foreground: #dee5ff;
+	--primary: #7fafff;
+	--primary-foreground: #002e60;
+	--primary-container: #64a1ff;
+	--secondary: #39485a;
+	--secondary-foreground: #c2d2e8;
+	--muted: #091328;
+	--muted-foreground: #a3aac4;
+	--accent: #192540;
+	--accent-foreground: #7fafff;
+	--destructive: #ff716c;
+	--destructive-foreground: #490006;
 	--income: #4ade80;
 	--income-foreground: #052e16;
-	--expense: #f87171;
+	--expense: #ff716c;
 	--expense-foreground: #450a0a;
-	--border: #27272a;
-	--input: #27272a;
-	--ring: #34d399;
-	--chart-1: #34d399;
-	--chart-2: #a1a1aa;
-	--chart-3: #71717a;
+	--balance-soft: #141f38;
+	--income-soft: #0f1930;
+	--expense-soft: #1a2420;
+	--feature: #1e4db8;
+	--feature-foreground: #eef4ff;
+	--border: #40485d;
+	--input: #40485d;
+	--ring: #7fafff;
+	--chart-1: #7fafff;
+	--chart-2: #a3aac4;
+	--chart-3: #6d758c;
 	--chart-4: #4ade80;
-	--chart-5: #60a5fa;
-	--sidebar: #0a0a0a;
-	--sidebar-foreground: #d4d4d8;
-	--sidebar-primary: #34d399;
-	--sidebar-primary-foreground: #022c22;
-	--sidebar-accent: #1c1c1c;
-	--sidebar-accent-foreground: #fafafa;
-	--sidebar-border: #27272a;
-	--sidebar-ring: #34d399;
+	--chart-5: #64a1ff;
+	--sidebar: #091328;
+	--sidebar-foreground: #a3aac4;
+	--sidebar-primary: #7fafff;
+	--sidebar-primary-foreground: #002e60;
+	--sidebar-accent: #192540;
+	--sidebar-accent-foreground: #7fafff;
+	--sidebar-border: #192540;
+	--sidebar-ring: #7fafff;
+	--header: #0a1428;
 	--font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
 	--font-serif: Source Serif 4, serif;
 	--font-mono: Fira Code, ui-monospace, monospace;
@@ -127,6 +141,7 @@
 	--color-popover-foreground: var(--popover-foreground);
 	--color-primary: var(--primary);
 	--color-primary-foreground: var(--primary-foreground);
+	--color-primary-container: var(--primary-container);
 	--color-secondary: var(--secondary);
 	--color-secondary-foreground: var(--secondary-foreground);
 	--color-muted: var(--muted);
@@ -139,6 +154,11 @@
 	--color-income-foreground: var(--income-foreground);
 	--color-expense: var(--expense);
 	--color-expense-foreground: var(--expense-foreground);
+	--color-balance-soft: var(--balance-soft);
+	--color-income-soft: var(--income-soft);
+	--color-expense-soft: var(--expense-soft);
+	--color-feature: var(--feature);
+	--color-feature-foreground: var(--feature-foreground);
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
@@ -155,6 +175,7 @@
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
+	--color-header: var(--header);
 
 	--font-sans: var(--font-sans);
 	--font-mono: var(--font-mono);
@@ -220,6 +241,25 @@
 	&::-webkit-scrollbar {
 		display: none;
 	}
+}
+
+@utility primary-gradient {
+	background-image: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+}
+
+@utility nav-active-fill {
+	background-image: linear-gradient(
+		90deg,
+		color-mix(in oklab, var(--primary) 18%, transparent) 0%,
+		color-mix(in oklab, var(--primary) 6%, transparent) 55%,
+		transparent 100%
+	);
+}
+
+@utility auth-mesh {
+	background-image:
+		radial-gradient(at 0% 0%, color-mix(in oklab, var(--primary) 15%, transparent) 0px, transparent 50%),
+		radial-gradient(at 100% 100%, color-mix(in oklab, var(--primary) 10%, transparent) 0px, transparent 50%);
 }
 
 @media (prefers-reduced-motion: reduce) {

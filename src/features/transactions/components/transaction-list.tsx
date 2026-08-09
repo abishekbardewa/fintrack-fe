@@ -1,5 +1,6 @@
 import { ArrowDownLeft, ArrowUpRight, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
 	DropdownMenu,
@@ -37,10 +38,11 @@ export function TransactionList({
 			className="overflow-hidden rounded-xl border border-border bg-card shadow-xs"
 			data-testid="transaction-list"
 		>
-			<div className="hidden grid-cols-[7rem_minmax(0,1.4fr)_minmax(0,1fr)_8rem_2.5rem] gap-3 border-b border-border bg-muted/40 px-4 py-2.5 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:grid">
+			<div className="hidden grid-cols-[7rem_7.5rem_minmax(0,1fr)_minmax(0,1.2fr)_8rem_2.5rem] gap-3 border-b border-border bg-muted/40 px-4 py-2.5 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:grid">
 				<span>Date</span>
-				<span>Description</span>
+				<span>Type</span>
 				<span>Category</span>
+				<span>Description</span>
 				<span className="text-right">Amount</span>
 				<span className="sr-only">Actions</span>
 			</div>
@@ -49,7 +51,7 @@ export function TransactionList({
 				{items.map((tx) => {
 					const isIncome = tx.type === 'income';
 					const { main, sub } = categoryParts(tx, categoryLabels);
-					const title = tx.description?.trim() || main;
+					const description = tx.description?.trim() || '';
 					const showPreferred =
 						tx.amountPreferred != null &&
 						tx.currency !== preferredCurrency &&
@@ -58,23 +60,18 @@ export function TransactionList({
 					return (
 						<li
 							key={tx.id}
-							className="group px-3 py-3 transition-colors hover:bg-muted/30 sm:grid sm:grid-cols-[7rem_minmax(0,1.4fr)_minmax(0,1fr)_8rem_2.5rem] sm:items-center sm:gap-3 sm:px-4"
+							className="group px-3 py-3 transition-colors hover:bg-muted/30 sm:grid sm:grid-cols-[7rem_7.5rem_minmax(0,1fr)_minmax(0,1.2fr)_8rem_2.5rem] sm:items-center sm:gap-3 sm:px-4"
 							data-testid={`transaction-row-${tx.id}`}
 						>
 							<div className="mb-2 flex items-start justify-between gap-2 sm:mb-0 sm:block">
-								<div>
-									<p className="text-sm font-medium text-foreground">
-										{formatDisplayDate(tx.date)}
-									</p>
-									<p className="text-xs capitalize text-muted-foreground sm:hidden">
-										{tx.type}
-									</p>
-								</div>
+								<p className="text-sm font-medium text-foreground">
+									{formatDisplayDate(tx.date)}
+								</p>
 								<div className="text-right sm:hidden">
 									<p
 										className={cn(
 											'font-semibold tabular-nums',
-											isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground',
+											isIncome ? 'text-income' : 'text-foreground',
 										)}
 									>
 										{isIncome ? '+' : '−'}
@@ -83,48 +80,48 @@ export function TransactionList({
 								</div>
 							</div>
 
-							<div className="mb-2 flex min-w-0 items-center gap-3 sm:mb-0">
-								<span
+							<div className="mb-2 sm:mb-0">
+								<Badge
+									variant="secondary"
 									className={cn(
-										'flex size-9 shrink-0 items-center justify-center rounded-full',
-										isIncome ? 'bg-emerald-500/15 text-emerald-600' : 'bg-rose-500/15 text-rose-600',
+										'gap-1 px-2 py-1 font-medium capitalize',
+										isIncome
+											? 'bg-income/15 text-income'
+											: 'bg-expense/15 text-expense',
 									)}
-									aria-hidden="true"
 								>
 									{isIncome ? (
-										<ArrowDownLeft className="size-4" />
+										<ArrowDownLeft className="size-3.5" />
 									) : (
-										<ArrowUpRight className="size-4" />
+										<ArrowUpRight className="size-3.5" />
 									)}
-								</span>
-								<div className="min-w-0">
-									<p className="truncate font-medium text-foreground">{title}</p>
-									<p className="truncate text-xs capitalize text-muted-foreground">
-										{tx.type}
-									</p>
-								</div>
+									{tx.type}
+								</Badge>
+							</div>
+
+							<div className="mb-2 flex min-w-0 flex-col items-start gap-1 sm:mb-0">
+								<Badge variant="secondary" className="max-w-full truncate px-2.5 py-0.5">
+									{main}
+								</Badge>
+								{sub ? (
+									<Badge
+										variant="outline"
+										className="max-w-full truncate px-2.5 py-0.5 text-muted-foreground"
+									>
+										{sub}
+									</Badge>
+								) : null}
 							</div>
 
 							<div className="mb-2 min-w-0 sm:mb-0">
-								{sub ? (
-									<span className="inline-flex max-w-full items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-										<span className="truncate">{sub}</span>
-									</span>
-								) : (
-									<span className="inline-flex max-w-full items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground">
-										<span className="truncate">{main}</span>
-									</span>
-								)}
-								{sub ? (
-									<p className="mt-1 truncate text-xs text-muted-foreground">{main}</p>
-								) : null}
+								<p className="truncate text-sm text-foreground">{description}</p>
 							</div>
 
 							<div className="hidden text-right sm:block">
 								<p
 									className={cn(
 										'font-semibold tabular-nums',
-										isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground',
+										isIncome ? 'text-income' : 'text-foreground',
 									)}
 								>
 									{isIncome ? '+' : '−'}

@@ -14,7 +14,7 @@ export function AppShell() {
 			<SidebarNav collapsed={collapsed} onCollapsedChange={setCollapsed} />
 			<div
 				className={cn(
-					'min-w-0 transition-[padding] duration-300 ease-in-out',
+					'min-w-0 bg-background transition-[padding] duration-300 ease-in-out',
 					collapsed ? 'md:pl-0' : 'md:pl-64',
 				)}
 			>

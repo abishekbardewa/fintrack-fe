@@ -1,0 +1,7 @@
+date,type,category,subcategory (optional),amount,currency (optional),description (optional)
+2026-08-01,income,Salary,,85000,INR,Monthly salary
+2026-08-04,expense,Food,Groceries,500,INR,Weekly veggies
+2026-08-05,expense,Transport,,120,INR,Metro top-up
+2026-08-06,expense,Bills,Electricity,3200,,
+2026-08-07,expense,Shopping,,1899,INR,Online order
+2026-08-08,income,Side income,,12000,INR,Freelance invoice

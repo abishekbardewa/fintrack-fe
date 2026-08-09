@@ -1,6 +1,7 @@
 import { ChevronsLeft, ChevronsRight, Plus } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
 
+import { BrandMark } from '@/components/brand/brand-mark';
 import { Button } from '@/components/ui/button';
 import { NAV_ITEMS } from '@/config/navigation';
 import { cn } from '@/lib/utils';
@@ -14,22 +15,16 @@ export function SidebarNav({ collapsed, onCollapsedChange }: SidebarNavProps) {
 	return (
 		<aside
 			className={cn(
-				'fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-transform duration-300 ease-in-out md:flex',
+				'fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-sidebar text-sidebar-foreground transition-transform duration-300 ease-in-out md:flex',
 				collapsed ? '-translate-x-full pointer-events-none' : 'translate-x-0',
 			)}
 			aria-label="Main navigation"
 			aria-hidden={collapsed}
 			data-collapsed={collapsed ? 'true' : 'false'}
 		>
-			<div className="flex items-center gap-3 px-3 py-4">
-				<div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
-					FT
-				</div>
+			<div className="flex items-center gap-2 px-3 pt-4 pb-7">
 				<div className="min-w-0 flex-1">
-					<p className="truncate text-base font-semibold tracking-tight text-foreground">
-						FinTRACK
-					</p>
-					<p className="truncate text-xs text-muted-foreground">Personal finance</p>
+					<BrandMark />
 				</div>
 				<Button
 					type="button"
@@ -44,7 +39,7 @@ export function SidebarNav({ collapsed, onCollapsedChange }: SidebarNavProps) {
 				</Button>
 			</div>
 
-			<div className="px-3 pb-3">
+			<div className="px-3 pb-5">
 				<Button asChild className="w-full justify-start gap-2" data-testid="add-transaction-sidebar">
 					<Link to="/transactions?add=1">
 						<Plus className="size-4" />
@@ -53,7 +48,7 @@ export function SidebarNav({ collapsed, onCollapsedChange }: SidebarNavProps) {
 				</Button>
 			</div>
 
-			<nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pb-3 scrollbar-hidden">
+			<nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pt-1 pb-3 scrollbar-hidden">
 				{NAV_ITEMS.map((item) => {
 					const Icon = item.icon;
 					return (
@@ -63,10 +58,10 @@ export function SidebarNav({ collapsed, onCollapsedChange }: SidebarNavProps) {
 							tabIndex={collapsed ? -1 : undefined}
 							className={({ isActive }) =>
 								cn(
-									'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+									'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
 									isActive
-										? 'bg-primary/10 text-primary'
-										: 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+										? 'nav-active-fill text-primary'
+										: 'text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground',
 								)
 							}
 						>
