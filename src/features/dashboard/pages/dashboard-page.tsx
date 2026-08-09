@@ -107,6 +107,8 @@ export function DashboardPage() {
 						<DashboardChartPreviews
 							cashFlow={data.cashFlow}
 							categoryCompare={data.categoryCompare}
+							byCategoryBreakdown={data.byCategoryBreakdown}
+							byCategoryBreakdownPrevious={data.byCategoryBreakdownPrevious}
 							currency={data.currency}
 							periodLabel={data.period.label}
 						/>

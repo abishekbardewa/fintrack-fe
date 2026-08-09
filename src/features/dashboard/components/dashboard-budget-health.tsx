@@ -164,7 +164,7 @@ export function DashboardBudgetHealth({ budgets, currency }: DashboardBudgetHeal
 							isAllExpenses ? 'text-feature-foreground' : 'text-foreground',
 						)}
 					>
-						{budget.percent.toFixed(0)}%
+						{budget.percent}%
 					</p>
 				</div>
 				<Progress

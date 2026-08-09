@@ -1,5 +1,13 @@
 import { z } from 'zod';
 
+const optionalPositiveAmount = z
+	.string()
+	.trim()
+	.refine(
+		(v) => v === '' || (!Number.isNaN(Number(v)) && Number(v) > 0),
+		'Enter a positive amount',
+	);
+
 export const goalFormSchema = z.object({
 	name: z
 		.string()
@@ -12,6 +20,8 @@ export const goalFormSchema = z.object({
 		.min(1, 'Target amount is required')
 		.refine((v) => !Number.isNaN(Number(v)) && Number(v) > 0, 'Enter a positive amount'),
 	targetDate: z.string(),
+	initialAmount: optionalPositiveAmount,
+	initialDate: z.string(),
 });
 
 export type GoalFormValues = z.infer<typeof goalFormSchema>;

@@ -132,22 +132,31 @@ function GoalCard({
 							: 'No target date'}
 					</p>
 				</div>
-				<GoalActions
-					canContribute={canContribute}
-					status={goal.status}
-					onContribute={onContribute}
-					onEdit={onEdit}
-					onHistory={onHistory}
-					onCancel={onCancel}
-					onReactivate={onReactivate}
-					onDelete={onDelete}
-				/>
+				<div className="flex shrink-0 items-center gap-0.5">
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						aria-label="Contribution history"
+						onClick={onHistory}
+						data-testid={`goal-history-${goal.id}`}
+					>
+						<History />
+					</Button>
+					<GoalActions
+						status={goal.status}
+						onEdit={onEdit}
+						onCancel={onCancel}
+						onReactivate={onReactivate}
+						onDelete={onDelete}
+					/>
+				</div>
 			</div>
 
 			<div className="relative z-10 flex flex-1 flex-col gap-3 px-5 pb-5">
 				<div className="flex items-end gap-2">
 					<span className="text-4xl font-bold tracking-tight text-foreground tabular-nums">
-						{percent.toFixed(0)}%
+						{percent}%
 					</span>
 					<span className="mb-1 text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
 						Saved
@@ -198,20 +207,14 @@ function GoalCard({
 }
 
 function GoalActions({
-	canContribute,
 	status,
-	onContribute,
 	onEdit,
-	onHistory,
 	onCancel,
 	onReactivate,
 	onDelete,
 }: {
-	canContribute: boolean;
 	status: SavingsGoal['status'];
-	onContribute: () => void;
 	onEdit: () => void;
-	onHistory: () => void;
 	onCancel: () => void;
 	onReactivate: () => void;
 	onDelete: () => void;
@@ -224,16 +227,6 @@ function GoalActions({
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
-				{canContribute ? (
-					<DropdownMenuItem onClick={onContribute}>
-						<Plus />
-						Add contribution
-					</DropdownMenuItem>
-				) : null}
-				<DropdownMenuItem onClick={onHistory}>
-					<History />
-					Contributions
-				</DropdownMenuItem>
 				<DropdownMenuItem onClick={onEdit}>
 					<Pencil />
 					Edit

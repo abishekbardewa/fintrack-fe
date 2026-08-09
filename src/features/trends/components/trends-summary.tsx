@@ -68,7 +68,7 @@ function Delta({
 			)}
 		>
 			<Icon className="size-3.5" aria-hidden="true" />
-			{flat ? '0%' : `${Math.abs(value).toFixed(1)}%`}
+			{flat ? '0%' : `${Math.abs(value)}%`}
 			<span className="font-normal text-muted-foreground">{label}</span>
 		</span>
 	);
@@ -174,7 +174,7 @@ export function TrendsSummaryCards({ summary, currency, range }: TrendsSummaryCa
 
 				const display =
 					card.key === 'rate'
-						? `${summary.savingsRate!.toFixed(1)}%`
+						? `${summary.savingsRate}%`
 						: formatMoney(card.amount as number, currency);
 
 				return (

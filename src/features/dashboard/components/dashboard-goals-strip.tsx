@@ -44,7 +44,7 @@ export function DashboardGoalsStrip({ goals, currency }: DashboardGoalsStripProp
 				<div className="flex items-start justify-between gap-2">
 					<h3 className="truncate text-sm font-semibold text-foreground">{goal.name}</h3>
 					<span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
-						{goal.percent.toFixed(0)}%
+						{goal.percent}%
 					</span>
 				</div>
 				<p className="mt-1 text-xs text-muted-foreground tabular-nums">

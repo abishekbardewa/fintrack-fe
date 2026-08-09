@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 
+import { Badge } from '@/components/ui/badge';
 import type { DashboardRecentTransaction } from '@/features/dashboard/types';
 import { formatDisplayDate, formatMoney } from '@/features/transactions/utils';
 import { cn } from '@/lib/utils';
@@ -41,7 +42,7 @@ export function DashboardRecentTransactions({ items, currency }: DashboardRecent
 				<ul className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm divide-y divide-border">
 					{rows.map((tx) => {
 						const isIncome = tx.type === 'income';
-						const description = tx.description?.trim() || '';
+						const category = tx.subcategoryName?.trim() || tx.categoryName;
 
 						return (
 							<li
@@ -49,28 +50,25 @@ export function DashboardRecentTransactions({ items, currency }: DashboardRecent
 								className="flex items-center gap-3 px-4 py-3"
 								data-testid={`dashboard-recent-${tx.id}`}
 							>
-								<span
-									className={cn(
-										'flex size-9 shrink-0 items-center justify-center rounded-full',
-										isIncome
-											? 'bg-income/15 text-income'
-											: 'bg-expense/15 text-expense',
-									)}
-									aria-hidden="true"
-								>
-									{isIncome ? (
-										<ArrowDownLeft className="size-4" />
-									) : (
-										<ArrowUpRight className="size-4" />
-									)}
-								</span>
-								<div className="min-w-0 flex-1">
-									<p className="truncate text-sm font-medium text-foreground">
-										{description || tx.categoryName}
-									</p>
-									<p className="truncate text-xs text-muted-foreground">
-										{tx.categoryName} · {formatDisplayDate(tx.date)}
-									</p>
+								<div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+									<Badge
+										variant="secondary"
+										className={cn(
+											'px-1.5 py-0.5',
+											isIncome
+												? 'bg-income/15 text-income'
+												: 'bg-expense/15 text-expense',
+										)}
+										aria-label={tx.type}
+									>
+										{isIncome ? <ArrowDownLeft /> : <ArrowUpRight />}
+									</Badge>
+									<Badge variant="secondary" className="max-w-full truncate px-2.5 py-0.5">
+										{category}
+									</Badge>
+									<Badge variant="outline" className="shrink-0 px-2.5 py-0.5 text-muted-foreground">
+										{formatDisplayDate(tx.date)}
+									</Badge>
 								</div>
 								<p
 									className={cn(

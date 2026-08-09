@@ -124,7 +124,7 @@ function BudgetCard({
 				<div className="relative z-10 flex flex-1 flex-col gap-3 px-5 pb-5">
 					<div className="flex items-end gap-2">
 						<span className="text-4xl font-bold tracking-tight tabular-nums">
-							{budget.percent.toFixed(0)}%
+							{budget.percent}%
 						</span>
 						<span className="mb-1 text-[10px] font-semibold tracking-[0.14em] text-feature-foreground/70 uppercase">
 							Used
@@ -197,7 +197,7 @@ function BudgetCard({
 			<div className="relative z-10 flex flex-1 flex-col gap-3 px-5 pb-5">
 				<div className="flex items-end gap-2">
 					<span className="text-4xl font-bold tracking-tight text-foreground tabular-nums">
-						{budget.percent.toFixed(0)}%
+						{budget.percent}%
 					</span>
 					<span className="mb-1 text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
 						Used
