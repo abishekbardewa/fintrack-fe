@@ -18,6 +18,7 @@ import { FormField } from '@/features/auth/components/form-field';
 import { PasswordInput } from '@/features/auth/components/password-input';
 import { registerUser } from '@/features/auth/auth.service';
 import { setCredentials } from '@/features/auth/authSlice';
+import { homePathForUser } from '@/features/auth/utils';
 import {
 	formDataToObject,
 	registerSchema,
@@ -74,7 +75,7 @@ export function RegisterPage() {
 					}),
 				);
 				toast.success('Account created');
-				navigate('/dashboard', { replace: true });
+				navigate(homePathForUser(data.user), { replace: true });
 				return {
 					fieldErrors: {},
 					values: { name: '', email: '', password: '', currency: parsed.currency },

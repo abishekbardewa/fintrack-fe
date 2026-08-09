@@ -16,6 +16,7 @@ import {
 	zodFieldErrors,
 	type LoginFormValues,
 } from '@/features/auth/schemas';
+import { homePathForUser } from '@/features/auth/utils';
 import { getErrorMessage, getFieldErrors, toApiError } from '@/lib/api/errors';
 
 type LoginActionState = {
@@ -54,7 +55,7 @@ export function LoginPage() {
 					}),
 				);
 				toast.success('Welcome back');
-				navigate('/dashboard', { replace: true });
+				navigate(homePathForUser(data.user), { replace: true });
 				return {
 					fieldErrors: {},
 					values: { email: parsed.email, password: '' },

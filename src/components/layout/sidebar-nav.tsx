@@ -1,9 +1,12 @@
 import { ChevronsLeft, ChevronsRight, Plus } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
 
+import { useAppSelector } from '@/app/hooks';
 import { BrandMark } from '@/components/brand/brand-mark';
 import { Button } from '@/components/ui/button';
-import { NAV_ITEMS } from '@/config/navigation';
+import { ADMIN_NAV_ITEMS, NAV_ITEMS } from '@/config/navigation';
+import { selectUser } from '@/features/auth/authSlice';
+import { getUserRole } from '@/features/auth/utils';
 import { cn } from '@/lib/utils';
 
 interface SidebarNavProps {
@@ -12,6 +15,10 @@ interface SidebarNavProps {
 }
 
 export function SidebarNav({ collapsed, onCollapsedChange }: SidebarNavProps) {
+	const user = useAppSelector(selectUser);
+	const isAdmin = getUserRole(user) === 'admin';
+	const navItems = isAdmin ? ADMIN_NAV_ITEMS : NAV_ITEMS;
+
 	return (
 		<aside
 			className={cn(
@@ -39,17 +46,19 @@ export function SidebarNav({ collapsed, onCollapsedChange }: SidebarNavProps) {
 				</Button>
 			</div>
 
-			<div className="px-3 pb-5">
-				<Button asChild className="w-full justify-start gap-2" data-testid="add-transaction-sidebar">
-					<Link to="/transactions?add=1">
-						<Plus className="size-4" />
-						Add transaction
-					</Link>
-				</Button>
-			</div>
+			{!isAdmin ? (
+				<div className="px-3 pb-5">
+					<Button asChild className="w-full justify-start gap-2" data-testid="add-transaction-sidebar">
+						<Link to="/transactions?add=1">
+							<Plus className="size-4" />
+							Add transaction
+						</Link>
+					</Button>
+				</div>
+			) : null}
 
 			<nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pt-1 pb-3 scrollbar-hidden">
-				{NAV_ITEMS.map((item) => {
+				{navItems.map((item) => {
 					const Icon = item.icon;
 					return (
 						<NavLink
