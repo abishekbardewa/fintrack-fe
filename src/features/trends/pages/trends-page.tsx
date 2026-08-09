@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MoreHorizontal } from 'lucide-react';
 
+import { useAppSelector } from '@/app/hooks';
 import { ErrorState } from '@/components/common/error-state';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,11 +12,13 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
+import { selectUser } from '@/features/auth/authSlice';
 import { TrendsChartPreviews } from '@/features/trends/components/trends-chart-previews';
 import { TrendsSummaryCards } from '@/features/trends/components/trends-summary';
 import { useTrendsQuery } from '@/features/trends/hooks/use-trends';
 import type { TrendsRangeType } from '@/features/trends/types';
 import { buildTransactionsHref, toDateInputValue } from '@/features/transactions/utils';
+import { toApiError } from '@/lib/api/errors';
 import { cn } from '@/lib/utils';
 
 const PRIMARY_RANGES: { value: TrendsRangeType; label: string }[] = [
@@ -32,36 +35,42 @@ const MORE_RANGES: { value: TrendsRangeType; label: string }[] = [
 
 const MORE_RANGE_VALUES = new Set(MORE_RANGES.map((r) => r.value));
 
+function sameIds(a: string[], b: string[]) {
+	return a.length === b.length && a.every((id, i) => id === b[i]);
+}
+
 export function TrendsPage() {
+	const userId = useAppSelector(selectUser)?.id;
 	const [range, setRange] = useState<TrendsRangeType>('last6');
 	const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
-	const { data, isLoading, isError, refetch } = useTrendsQuery(range, selectedCategoryIds);
+	const { data, error, isLoading, isError, isPlaceholderData, refetch } = useTrendsQuery(
+		range,
+		selectedCategoryIds,
+	);
 	const moreActive = MORE_RANGE_VALUES.has(range);
 
-	const categoryOptionKey =
-		data?.categoryOptions.map((category) => category.id).join(',') ?? '';
+	useEffect(() => {
+		setSelectedCategoryIds([]);
+	}, [userId]);
 
 	useEffect(() => {
-		if (!data?.categoryOptions.length) return;
-		const options = data.categoryOptions;
+		if (!data?.categoryOptions || isPlaceholderData) return;
+		const optionIds = new Set(data.categoryOptions.map((category) => category.id));
 		setSelectedCategoryIds((prev) => {
-			const valid = prev.filter((id) => options.some((c) => c.id === id));
-			if (
-				valid.length > 0 &&
-				valid.length === prev.length &&
-				valid.every((id, i) => id === prev[i])
-			) {
-				return prev;
-			}
-			if (valid.length > 0) return valid;
-			return options.slice(0, 2).map((c) => c.id);
+			const valid = prev.filter((id) => optionIds.has(id));
+			return sameIds(valid, prev) ? prev : valid;
 		});
-	}, [categoryOptionKey, data]);
+	}, [data, isPlaceholderData]);
+
+	useEffect(() => {
+		if (!isError || selectedCategoryIds.length === 0) return;
+		if (toApiError(error).statusCode !== 422) return;
+		setSelectedCategoryIds([]);
+	}, [isError, error, selectedCategoryIds.length]);
 
 	const toggleCategory = (id: string) => {
 		setSelectedCategoryIds((prev) => {
 			if (prev.includes(id)) {
-				if (prev.length <= 1) return prev;
 				return prev.filter((x) => x !== id);
 			}
 			if (prev.length >= 2) return [prev[1], id];
@@ -75,6 +84,8 @@ export function TrendsPage() {
 				to: toDateInputValue(data.range.to),
 			})
 		: '/transactions';
+
+	const showError = isError && !data && toApiError(error).statusCode !== 422;
 
 	return (
 		<div className="flex flex-col gap-8" data-testid="trends-page">
@@ -168,7 +179,7 @@ export function TrendsPage() {
 				</div>
 			) : null}
 
-			{isError && !data ? (
+			{showError ? (
 				<ErrorState title="Could not load trends" onRetry={() => void refetch()} />
 			) : null}
 
