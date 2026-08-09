@@ -139,6 +139,17 @@ function ProfileFormFields({ user }: ProfileFormProps) {
 			</div>
 
 			<div className="grid gap-2">
+				<Label htmlFor="profile-role">Role</Label>
+				<Input
+					id="profile-role"
+					value={user.role === 'admin' ? 'Admin' : 'User'}
+					disabled
+					readOnly
+					data-testid="profile-role"
+				/>
+			</div>
+
+			<div className="grid gap-2">
 				<Label htmlFor="profile-currency">Currency</Label>
 				<Select
 					value={currency}

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Menu } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
-import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS } from '@/config/navigation';
+import { useAppSelector } from '@/app/hooks';
 import { Button } from '@/components/ui/button';
 import {
 	Sheet,
@@ -12,10 +12,57 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from '@/components/ui/sheet';
+import { ADMIN_NAV_ITEMS, PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS } from '@/config/navigation';
+import { selectUser } from '@/features/auth/authSlice';
+import { getUserRole } from '@/features/auth/utils';
 import { cn } from '@/lib/utils';
 
 export function MobileBottomNav() {
+	const user = useAppSelector(selectUser);
+	const isAdmin = getUserRole(user) === 'admin';
 	const [moreOpen, setMoreOpen] = useState(false);
+
+	if (isAdmin) {
+		return (
+			<nav
+				className="fixed inset-x-0 bottom-0 z-40 border-t border-border/15 bg-header/95 backdrop-blur supports-backdrop-filter:bg-header/80 md:hidden"
+				aria-label="Primary navigation"
+				style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+			>
+				<div className="flex h-16 items-stretch justify-around px-1">
+					{ADMIN_NAV_ITEMS.map((item) => {
+						const Icon = item.icon;
+						return (
+							<NavLink
+								key={item.href}
+								to={item.href}
+								className={({ isActive }) =>
+									cn(
+										'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[10px] font-medium transition-colors',
+										isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+									)
+								}
+							>
+								{({ isActive }) => (
+									<>
+										<span
+											className={cn(
+												'flex size-8 items-center justify-center rounded-full',
+												isActive && 'bg-primary/15',
+											)}
+										>
+											<Icon className="size-5" aria-hidden="true" />
+										</span>
+										<span className="truncate">{item.title}</span>
+									</>
+								)}
+							</NavLink>
+						);
+					})}
+				</div>
+			</nav>
+		);
+	}
 
 	return (
 		<nav

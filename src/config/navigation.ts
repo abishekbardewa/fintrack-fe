@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import {
+	ArrowLeftRight,
 	FolderTree,
 	LayoutDashboard,
 	Receipt,
@@ -24,6 +25,10 @@ export const NAV_ITEMS: NavItem[] = [
 	{ title: 'Categories', href: '/categories', icon: FolderTree },
 	{ title: 'Trends', href: '/trends', icon: TrendingUp },
 	{ title: 'AI Review', href: '/reviews', icon: Sparkles },
+];
+
+export const ADMIN_NAV_ITEMS: NavItem[] = [
+	{ title: 'Exchange rates', href: '/admin/exchange-rates', icon: ArrowLeftRight, primary: true },
 ];
 
 export const PRIMARY_NAV_ITEMS = NAV_ITEMS.filter((item) => item.primary);

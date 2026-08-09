@@ -16,6 +16,7 @@ function normalizeUser(user: AuthUser & { _id?: string }): AuthUser {
 	return {
 		...rest,
 		id: user.id || _id || '',
+		role: user.role === 'admin' ? 'admin' : 'user',
 	};
 }
 
