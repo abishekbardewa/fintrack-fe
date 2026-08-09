@@ -28,6 +28,21 @@ export interface DashboardCategorySlice {
 	percent: number;
 }
 
+export interface DashboardCategoryBreakdownSub {
+	subcategoryId: string | null;
+	name: string | null;
+	amount: number;
+	percent: number;
+}
+
+export interface DashboardCategoryBreakdownRow {
+	categoryId: string | null;
+	name: string;
+	amount: number;
+	percent: number;
+	subcategories: DashboardCategoryBreakdownSub[];
+}
+
 export interface DashboardCategoryCompareSide {
 	key: string;
 	label: string;
@@ -69,6 +84,7 @@ export interface DashboardRecentTransaction {
 	type: 'income' | 'expense';
 	description: string;
 	categoryName: string;
+	subcategoryName?: string | null;
 	amount: number;
 	date: string;
 }
@@ -84,6 +100,8 @@ export interface DashboardData {
 	summary: DashboardSummary;
 	cashFlow: DashboardCashFlowPoint[];
 	byCategory: DashboardCategorySlice[];
+	byCategoryBreakdown?: DashboardCategoryBreakdownRow[];
+	byCategoryBreakdownPrevious?: DashboardCategoryBreakdownRow[];
 	categoryCompare: DashboardCategoryCompare;
 	budgets: DashboardBudgetRow[];
 	goals: DashboardGoalRow[];

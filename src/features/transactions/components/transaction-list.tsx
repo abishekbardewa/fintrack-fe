@@ -20,11 +20,15 @@ interface TransactionListProps {
 	onDelete: (tx: Transaction) => void;
 }
 
-function categoryParts(tx: Transaction, labels: Map<string, string>) {
-	const main = labels.get(tx.categoryId) ?? 'Category';
-	const sub = tx.subcategoryId ? labels.get(tx.subcategoryId) : undefined;
-	return { main, sub };
+function categoryLabel(tx: Transaction, labels: Map<string, string>) {
+	if (tx.subcategoryId) {
+		return labels.get(tx.subcategoryId) ?? labels.get(tx.categoryId) ?? 'Category';
+	}
+	return labels.get(tx.categoryId) ?? 'Category';
 }
+
+const ROW_GRID =
+	'sm:grid-cols-[8.5rem_7.5rem_minmax(0,1fr)_minmax(0,1.2fr)_7rem_8rem_2.5rem]';
 
 export function TransactionList({
 	items,
@@ -38,11 +42,17 @@ export function TransactionList({
 			className="overflow-hidden rounded-xl border border-border bg-card shadow-xs"
 			data-testid="transaction-list"
 		>
-			<div className="hidden grid-cols-[7rem_7.5rem_minmax(0,1fr)_minmax(0,1.2fr)_8rem_2.5rem] gap-3 border-b border-border bg-muted/40 px-4 py-2.5 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:grid">
-				<span>Date</span>
+			<div
+				className={cn(
+					'hidden gap-3 border-b border-border bg-muted/40 px-4 py-2.5 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:grid',
+					ROW_GRID,
+				)}
+			>
+				<span>Spent Date</span>
 				<span>Type</span>
 				<span>Category</span>
 				<span>Description</span>
+				<span>Updated</span>
 				<span className="text-right">Amount</span>
 				<span className="sr-only">Actions</span>
 			</div>
@@ -50,8 +60,9 @@ export function TransactionList({
 			<ul className="divide-y divide-border">
 				{items.map((tx) => {
 					const isIncome = tx.type === 'income';
-					const { main, sub } = categoryParts(tx, categoryLabels);
+					const category = categoryLabel(tx, categoryLabels);
 					const description = tx.description?.trim() || '';
+					const updated = tx.updatedAt ? formatDisplayDate(tx.updatedAt) : '—';
 					const showPreferred =
 						tx.amountPreferred != null &&
 						tx.currency !== preferredCurrency &&
@@ -60,7 +71,10 @@ export function TransactionList({
 					return (
 						<li
 							key={tx.id}
-							className="group px-3 py-3 transition-colors hover:bg-muted/30 sm:grid sm:grid-cols-[7rem_7.5rem_minmax(0,1fr)_minmax(0,1.2fr)_8rem_2.5rem] sm:items-center sm:gap-3 sm:px-4"
+							className={cn(
+								'group px-3 py-3 transition-colors hover:bg-muted/30 sm:grid sm:items-center sm:gap-3 sm:px-4',
+								ROW_GRID,
+							)}
 							data-testid={`transaction-row-${tx.id}`}
 						>
 							<div className="mb-2 flex items-start justify-between gap-2 sm:mb-0 sm:block">
@@ -99,22 +113,23 @@ export function TransactionList({
 								</Badge>
 							</div>
 
-							<div className="mb-2 flex min-w-0 flex-col items-start gap-1 sm:mb-0">
+							<div className="mb-2 min-w-0 sm:mb-0">
 								<Badge variant="secondary" className="max-w-full truncate px-2.5 py-0.5">
-									{main}
+									{category}
 								</Badge>
-								{sub ? (
-									<Badge
-										variant="outline"
-										className="max-w-full truncate px-2.5 py-0.5 text-muted-foreground"
-									>
-										{sub}
-									</Badge>
-								) : null}
 							</div>
 
 							<div className="mb-2 min-w-0 sm:mb-0">
 								<p className="truncate text-sm text-foreground">{description}</p>
+								<p className="mt-0.5 text-xs text-muted-foreground sm:hidden">
+									Updated {updated}
+								</p>
+							</div>
+
+							<div className="mb-2 hidden min-w-0 sm:mb-0 sm:block">
+								<p className="truncate text-sm text-muted-foreground tabular-nums">
+									{updated}
+								</p>
 							</div>
 
 							<div className="hidden text-right sm:block">

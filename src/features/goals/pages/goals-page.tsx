@@ -20,7 +20,11 @@ import {
 	useGoalsQuery,
 	useUpdateGoalMutation,
 } from '@/features/goals/hooks/use-goals';
-import type { SavingsGoal, SavingsGoalStatus } from '@/features/goals/types';
+import type {
+	CreateGoalRequest,
+	SavingsGoal,
+	SavingsGoalStatus,
+} from '@/features/goals/types';
 import { MAX_ACTIVE_SAVINGS_GOALS } from '@/features/goals/types';
 import { getErrorMessage } from '@/lib/api/errors';
 import { DEFAULT_CURRENCY } from '@/lib/currencies';
@@ -67,30 +71,29 @@ export function GoalsPage() {
 		setFormOpen(true);
 	};
 
-	const handleFormSubmit = async (payload: {
-		name: string;
-		targetAmount: number;
-		currency?: string;
-		targetDate?: string | null;
-	}) => {
+	const handleFormSubmit = async (
+		payload:
+			| CreateGoalRequest
+			| {
+					name: string;
+					targetAmount: number;
+					targetDate?: string | null;
+			  },
+	) => {
 		try {
 			if (editing) {
+				const { name, targetAmount, targetDate } = payload as {
+					name: string;
+					targetAmount: number;
+					targetDate?: string | null;
+				};
 				await updateMutation.mutateAsync({
 					id: editing.id,
-					payload: {
-						name: payload.name,
-						targetAmount: payload.targetAmount,
-						targetDate: payload.targetDate,
-					},
+					payload: { name, targetAmount, targetDate },
 				});
 				toast.success('Goal updated');
 			} else {
-				await createMutation.mutateAsync({
-					name: payload.name,
-					targetAmount: payload.targetAmount,
-					currency: payload.currency,
-					targetDate: payload.targetDate,
-				});
+				await createMutation.mutateAsync(payload as CreateGoalRequest);
 				toast.success('Goal created');
 			}
 			setFormOpen(false);

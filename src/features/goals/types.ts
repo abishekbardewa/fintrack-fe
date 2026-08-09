@@ -51,7 +51,9 @@ export interface CreateGoalRequest {
 	name: string;
 	targetAmount: number;
 	currency?: string;
-	targetDate?: string | null;
+	targetDate?: string;
+	initialAmount?: number;
+	initialDate?: string;
 }
 
 export interface UpdateGoalRequest {

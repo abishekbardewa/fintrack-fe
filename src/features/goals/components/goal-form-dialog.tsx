@@ -18,7 +18,7 @@ import {
 	goalFormSchema,
 	type GoalFormValues,
 } from '@/features/goals/schemas';
-import type { SavingsGoal } from '@/features/goals/types';
+import type { CreateGoalRequest, SavingsGoal } from '@/features/goals/types';
 import { toDateInputValue } from '@/features/goals/utils';
 import { dateInputToIso } from '@/features/transactions/utils';
 
@@ -28,12 +28,15 @@ interface GoalFormDialogProps {
 	goal?: SavingsGoal | null;
 	preferredCurrency: string;
 	pending?: boolean;
-	onSubmit: (payload: {
-		name: string;
-		targetAmount: number;
-		currency?: string;
-		targetDate?: string | null;
-	}) => Promise<void> | void;
+	onSubmit: (
+		payload:
+			| CreateGoalRequest
+			| {
+					name: string;
+					targetAmount: number;
+					targetDate?: string | null;
+			  },
+	) => Promise<void> | void;
 }
 
 export function GoalFormDialog({
@@ -82,6 +85,8 @@ function GoalFormFields({
 		name: goal?.name ?? '',
 		targetAmount: goal ? String(goal.targetAmount) : '',
 		targetDate: goal?.targetDate ? toDateInputValue(goal.targetDate) : '',
+		initialAmount: '',
+		initialDate: '',
 	}));
 	const [errors, setErrors] = useState<Partial<Record<keyof GoalFormValues, string>>>({});
 
@@ -98,12 +103,31 @@ function GoalFormFields({
 			return;
 		}
 		const parsed = goalFormSchema.parse(values);
-		await onSubmit({
+
+		if (isEdit) {
+			await onSubmit({
+				name: parsed.name,
+				targetAmount: Number(parsed.targetAmount),
+				targetDate: parsed.targetDate ? dateInputToIso(parsed.targetDate) : null,
+			});
+			return;
+		}
+
+		const createPayload: CreateGoalRequest = {
 			name: parsed.name,
 			targetAmount: Number(parsed.targetAmount),
-			...(isEdit ? {} : { currency: preferredCurrency }),
-			targetDate: parsed.targetDate ? dateInputToIso(parsed.targetDate) : null,
-		});
+			currency: preferredCurrency,
+		};
+		if (parsed.targetDate) {
+			createPayload.targetDate = dateInputToIso(parsed.targetDate);
+		}
+		if (parsed.initialAmount) {
+			createPayload.initialAmount = Number(parsed.initialAmount);
+		}
+		if (parsed.initialDate) {
+			createPayload.initialDate = dateInputToIso(parsed.initialDate);
+		}
+		await onSubmit(createPayload);
 	};
 
 	return (
@@ -152,7 +176,19 @@ function GoalFormFields({
 				</div>
 
 				<div className="grid gap-2">
-					<Label>Target date (optional)</Label>
+					<div className="flex items-center justify-between gap-2">
+						<Label>Target date (optional)</Label>
+						{values.targetDate ? (
+							<button
+								type="button"
+								className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+								onClick={() => setField('targetDate', '')}
+								disabled={pending}
+							>
+								Clear
+							</button>
+						) : null}
+					</div>
 					<DatePicker
 						value={values.targetDate}
 						onChange={(v) => setField('targetDate', v)}
@@ -161,6 +197,56 @@ function GoalFormFields({
 						aria-label="Target date"
 					/>
 				</div>
+
+				{!isEdit ? (
+					<>
+						<div className="grid gap-2">
+							<Label htmlFor="goal-initial-amount">Already saved (optional)</Label>
+							<Input
+								id="goal-initial-amount"
+								type="number"
+								inputMode="decimal"
+								min="0"
+								step="any"
+								value={values.initialAmount}
+								onChange={(e) => setField('initialAmount', e.target.value)}
+								placeholder="500"
+								className="tabular-nums"
+								disabled={pending}
+								aria-invalid={Boolean(errors.initialAmount)}
+								data-testid="goal-initial-amount-input"
+							/>
+							{errors.initialAmount ? (
+								<p className="text-[10px] leading-tight text-destructive">
+									{errors.initialAmount}
+								</p>
+							) : null}
+						</div>
+
+						<div className="grid gap-2">
+							<div className="flex items-center justify-between gap-2">
+								<Label>Saved on (optional)</Label>
+								{values.initialDate ? (
+									<button
+										type="button"
+										className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+										onClick={() => setField('initialDate', '')}
+										disabled={pending}
+									>
+										Clear
+									</button>
+								) : null}
+							</div>
+							<DatePicker
+								value={values.initialDate}
+								onChange={(v) => setField('initialDate', v)}
+								placeholder="No date"
+								disabled={pending}
+								aria-label="Saved on"
+							/>
+						</div>
+					</>
+				) : null}
 			</div>
 
 			<DialogFooter>
