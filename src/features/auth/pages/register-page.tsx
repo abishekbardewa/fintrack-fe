@@ -108,7 +108,6 @@ export function RegisterPage() {
 	return (
 		<AuthLayout
 			title="Create account"
-			subtitle="Begin your journey to financial clarity."
 			panelHeadline={
 				<>
 					Design your

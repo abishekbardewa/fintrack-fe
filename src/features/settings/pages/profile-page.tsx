@@ -14,7 +14,7 @@ export function ProfilePage() {
 		<div className="flex flex-col gap-6">
 			<header>
 				<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Profile</h1>
-				<p className="mt-1 text-sm text-muted-foreground">Your account details.</p>
+				<p className="mt-1 text-sm text-muted-foreground">The basics that personalize your experience.</p>
 			</header>
 
 			{isLoading && !user ? (

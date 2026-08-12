@@ -25,51 +25,72 @@ export function DashboardPage() {
 	const user = useAppSelector(selectUser);
 	const [period, setPeriod] = useState<DashboardPeriodType>('month');
 	const { data, isLoading, isError, refetch } = useDashboardQuery(period);
+	const showChromeSkeleton = isLoading && !data;
 
 	return (
 		<div className="flex flex-col gap-8" data-testid="dashboard-page">
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
 					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Dashboard</h1>
-					<p className="mt-1 text-sm text-muted-foreground">
-						{user?.name
-							? `Hi ${user.name}${data ? ` · ${data.period.label}` : ''}`
-							: (data?.period.label ?? 'Loading…')}
-					</p>
+					{showChromeSkeleton ? (
+						<Skeleton className="mt-1 h-4 w-40" />
+					) : (
+						<p className="mt-1 text-sm text-muted-foreground">
+							{user?.name
+								? `Hi ${user.name}${data ? ` · ${data.period.label}` : ''}`
+								: (data?.period.label ?? null)}
+						</p>
+					)}
 				</div>
-				<Button asChild data-testid="dashboard-add-transaction">
-					<Link to="/transactions?add=1">
-						<Plus className="size-4" />
-						Add transaction
-					</Link>
-				</Button>
+				{showChromeSkeleton ? (
+					<Skeleton className="h-9 w-40 rounded-full" />
+				) : (
+					<Button asChild data-testid="dashboard-add-transaction">
+						<Link to="/transactions?add=1">
+							<Plus className="size-4" />
+							Add transaction
+						</Link>
+					</Button>
+				)}
 			</header>
 
-			<div className="flex flex-wrap gap-2" role="tablist" aria-label="Period" data-testid="dashboard-period-tabs">
-				{PERIODS.map((item) => {
-					const active = period === item.value;
-					return (
-						<button
-							key={item.value}
-							type="button"
-							role="tab"
-							aria-selected={active}
-							onClick={() => setPeriod(item.value)}
-							className={cn(
-								'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
-								active
-									? 'bg-primary text-primary-foreground shadow-sm'
-									: 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
-							)}
-							data-testid={`dashboard-period-${item.value}`}
-						>
-							{item.label}
-						</button>
-					);
-				})}
-			</div>
+			{showChromeSkeleton ? (
+				<div className="flex flex-wrap gap-2" aria-hidden="true">
+					<Skeleton className="h-8 w-28 rounded-full" />
+					<Skeleton className="h-8 w-24 rounded-full" />
+				</div>
+			) : (
+				<div
+					className="flex flex-wrap gap-2"
+					role="tablist"
+					aria-label="Period"
+					data-testid="dashboard-period-tabs"
+				>
+					{PERIODS.map((item) => {
+						const active = period === item.value;
+						return (
+							<button
+								key={item.value}
+								type="button"
+								role="tab"
+								aria-selected={active}
+								onClick={() => setPeriod(item.value)}
+								className={cn(
+									'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
+									active
+										? 'bg-primary text-primary-foreground shadow-sm'
+										: 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+								)}
+								data-testid={`dashboard-period-${item.value}`}
+							>
+								{item.label}
+							</button>
+						);
+					})}
+				</div>
+			)}
 
-			{isLoading && !data ? (
+			{showChromeSkeleton ? (
 				<div className="flex flex-col gap-8" data-testid="dashboard-loading">
 					<div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
 						<Skeleton className="h-24 rounded-2xl" />

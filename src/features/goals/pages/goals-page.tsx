@@ -157,56 +157,70 @@ export function GoalsPage() {
 		}
 	};
 
+	const showChromeSkeleton = isLoading && !data;
+
 	return (
 		<div className="flex flex-col gap-6">
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
 					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Goals</h1>
 					<p className="mt-1 text-sm text-muted-foreground">
-						Track savings goals and manual contributions.
+						Turn wishes into progress you can see.
 					</p>
 				</div>
-				<Button
-					type="button"
-					onClick={openCreate}
-					disabled={atActiveCap}
-					data-testid="goal-add"
-				>
-					<Plus className="size-4" />
-					New Goal
-				</Button>
+				{showChromeSkeleton ? (
+					<Skeleton className="h-9 w-28 rounded-full" />
+				) : (
+					<Button
+						type="button"
+						onClick={openCreate}
+						disabled={atActiveCap}
+						data-testid="goal-add"
+					>
+						<Plus className="size-4" />
+						New Goal
+					</Button>
+				)}
 			</header>
 
-			{atActiveCap ? (
+			{!showChromeSkeleton && atActiveCap ? (
 				<p className="text-sm text-muted-foreground">
 					You&apos;ve reached the limit of {MAX_ACTIVE_SAVINGS_GOALS} active goals. Complete or
 					cancel one to add another.
 				</p>
 			) : null}
 
-			<div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter by status">
-				{STATUS_FILTERS.map((item) => {
-					const active = statusFilter === item.value;
-					return (
-						<button
-							key={item.value}
-							type="button"
-							role="tab"
-							aria-selected={active}
-							onClick={() => setStatusFilter(item.value)}
-							className={cn(
-								'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
-								active
-									? 'bg-primary text-primary-foreground shadow-sm'
-									: 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
-							)}
-							data-testid={`goal-filter-${item.value}`}
-						>
-							{item.label}
-						</button>
-					);
-				})}
-			</div>
+			{showChromeSkeleton ? (
+				<div className="flex flex-wrap gap-2" aria-hidden="true">
+					<Skeleton className="h-8 w-20 rounded-full" />
+					<Skeleton className="h-8 w-28 rounded-full" />
+					<Skeleton className="h-8 w-28 rounded-full" />
+				</div>
+			) : (
+				<div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter by status">
+					{STATUS_FILTERS.map((item) => {
+						const active = statusFilter === item.value;
+						return (
+							<button
+								key={item.value}
+								type="button"
+								role="tab"
+								aria-selected={active}
+								onClick={() => setStatusFilter(item.value)}
+								className={cn(
+									'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
+									active
+										? 'bg-primary text-primary-foreground shadow-sm'
+										: 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+								)}
+								data-testid={`goal-filter-${item.value}`}
+							>
+								{item.label}
+							</button>
+						);
+					})}
+				</div>
+			)}
 
 			{isLoading ? (
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">

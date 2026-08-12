@@ -154,6 +154,7 @@ export function BudgetsPage() {
 	const formYear = current.year;
 	const formMonth = current.month;
 	const formPeriodLabel = currentPeriodLabel;
+	const showChromeSkeleton = isLoading && !data;
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -161,67 +162,80 @@ export function BudgetsPage() {
 				<div>
 					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Budgets</h1>
 					<p className="mt-1 text-sm text-muted-foreground">
-						Limit monthly spend.
+						Decide your limits before you overspend.
 					</p>
 				</div>
-				<Button
-					type="button"
-					onClick={openCreate}
-					disabled={periodFullyBooked}
-					data-testid="budget-add"
-				>
-					<Plus className="size-4" />
-					Add budget
-				</Button>
+				{showChromeSkeleton ? (
+					<Skeleton className="h-9 w-32 rounded-full" />
+				) : (
+					<Button
+						type="button"
+						onClick={openCreate}
+						disabled={periodFullyBooked}
+						data-testid="budget-add"
+					>
+						<Plus className="size-4" />
+						Add budget
+					</Button>
+				)}
 			</header>
 
-			<div className="flex flex-wrap items-center justify-end gap-3">
-				{!viewingCurrentMonth ? (
-					<button
-						type="button"
-						className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-						onClick={goToCurrentMonth}
-						data-testid="budget-this-month"
-					>
-						This month
-					</button>
-				) : null}
-
-				<div className="flex items-center gap-2">
-					<button
-						type="button"
-						className={monthNavBtnClass}
-						onClick={goPrevMonth}
-						disabled={!canGoPrevMonth(year, month)}
-						aria-label="Previous month"
-						data-testid="budget-prev-month"
-					>
-						<ChevronLeft className="size-4" />
-					</button>
-					<p className="min-w-32 px-1 text-center text-sm font-semibold tracking-tight tabular-nums">
-						{periodLabel}
-					</p>
-					<button
-						type="button"
-						className={monthNavBtnClass}
-						onClick={goNextMonth}
-						disabled={!canGoNextMonth(year, month)}
-						aria-label="Next month"
-						data-testid="budget-next-month"
-					>
-						<ChevronRight className="size-4" />
-					</button>
+			{showChromeSkeleton ? (
+				<div className="flex flex-wrap items-center justify-end gap-3" aria-hidden="true">
+					<Skeleton className="size-10 rounded-full" />
+					<Skeleton className="h-5 w-32 rounded-full" />
+					<Skeleton className="size-10 rounded-full" />
+					<Skeleton className="h-10 w-28 rounded-full" />
 				</div>
+			) : (
+				<div className="flex flex-wrap items-center justify-end gap-3">
+					{!viewingCurrentMonth ? (
+						<button
+							type="button"
+							className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+							onClick={goToCurrentMonth}
+							data-testid="budget-this-month"
+						>
+							This month
+						</button>
+					) : null}
 
-				<BudgetMonthFilter
-					year={year}
-					month={month}
-					onChange={({ year: nextYear, month: nextMonth }) => {
-						setYear(nextYear);
-						setMonth(nextMonth);
-					}}
-				/>
-			</div>
+					<div className="flex items-center gap-2">
+						<button
+							type="button"
+							className={monthNavBtnClass}
+							onClick={goPrevMonth}
+							disabled={!canGoPrevMonth(year, month)}
+							aria-label="Previous month"
+							data-testid="budget-prev-month"
+						>
+							<ChevronLeft className="size-4" />
+						</button>
+						<p className="min-w-32 px-1 text-center text-sm font-semibold tracking-tight tabular-nums">
+							{periodLabel}
+						</p>
+						<button
+							type="button"
+							className={monthNavBtnClass}
+							onClick={goNextMonth}
+							disabled={!canGoNextMonth(year, month)}
+							aria-label="Next month"
+							data-testid="budget-next-month"
+						>
+							<ChevronRight className="size-4" />
+						</button>
+					</div>
+
+					<BudgetMonthFilter
+						year={year}
+						month={month}
+						onChange={({ year: nextYear, month: nextMonth }) => {
+							setYear(nextYear);
+							setMonth(nextMonth);
+						}}
+					/>
+				</div>
+			)}
 
 			{isLoading ? (
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">

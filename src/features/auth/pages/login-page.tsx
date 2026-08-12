@@ -84,7 +84,6 @@ export function LoginPage() {
 	return (
 		<AuthLayout
 			title="Log in"
-			subtitle="Welcome back. Pick up where you left off."
 			panelHeadline={
 				<>
 					Track your
