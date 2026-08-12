@@ -260,7 +260,7 @@ export function TrendsChartPreviews({
 				</ChartCard>
 			</div>
 
-			<ChartCard title="Monthly bars" hint="Income vs spent by month">
+			<ChartCard title="Monthly bars" hint="Income vs Spent by month">
 				<Bar
 					data={{
 						labels,

@@ -49,7 +49,7 @@ export function TransactionList({
 					ROW_GRID,
 				)}
 			>
-				<span>Spent Date</span>
+				<span>Spend date</span>
 				<span>Category</span>
 				<span>Description</span>
 				<span>Updated</span>

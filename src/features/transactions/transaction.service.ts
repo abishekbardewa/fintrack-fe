@@ -12,6 +12,8 @@ import type {
 	TransactionExportFormat,
 	TransactionExportParams,
 	TransactionListParams,
+	TransactionMonthSummaryData,
+	TransactionMonthSummaryParams,
 	TransactionMutationData,
 	TransactionsListData,
 	UpdateTransactionRequest,
@@ -46,6 +48,14 @@ export async function listTransactions(params: TransactionListParams = {}) {
 		params: cleanParams(params),
 	});
 	return unwrapData(data, 'Failed to load transactions.');
+}
+
+export async function getTransactionMonthSummary(params: TransactionMonthSummaryParams) {
+	const { data } = await apiPrivate.get<ApiResponse<TransactionMonthSummaryData>>(
+		`${TRANSACTIONS_BASE}/month-summary`,
+		{ params: cleanParams(params) },
+	);
+	return unwrapData(data, 'Failed to load month summary.');
 }
 
 export async function createTransaction(payload: CreateTransactionRequest) {

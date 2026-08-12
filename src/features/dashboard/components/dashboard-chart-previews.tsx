@@ -301,7 +301,7 @@ export function DashboardChartPreviews({
 				periodLabel={breakdown?.label ?? periodLabel}
 			/>
 
-			<ChartCard title="Cash flow" hint={`${periodLabel} · Income + spent filled · net as line`}>
+			<ChartCard title="Cash flow" hint={`${periodLabel} · Income + Spent · net as line`}>
 				{cashFlow.length === 0 ? (
 					<p className="flex h-full items-center justify-center text-sm text-muted-foreground">
 						No cash flow for this period.
