@@ -150,65 +150,89 @@ export function ExchangeRatesPage() {
 		}
 	};
 
+	const showChromeSkeleton = tab === 'rates' && isLoading && !data;
+
 	return (
 		<div className="flex flex-col gap-6">
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
 					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Exchange rates</h1>
-					<p className="mt-1 text-sm text-muted-foreground">Daily FX rates for conversions.</p>
+					<p className="mt-1 text-sm text-muted-foreground">Keep conversions honest and up to date.</p>
 				</div>
-				<div className="flex flex-wrap gap-2">
-					<Button
-						type="button"
-						variant="outline"
-						onClick={() => void handleSyncToday()}
-						disabled={syncTodayMutation.isPending}
-						data-testid="exchange-rate-sync-today"
-					>
-						<RefreshCw
-							className={cn('size-4', syncTodayMutation.isPending && 'animate-spin')}
-						/>
-						Sync today
-					</Button>
-					<Button type="button" onClick={openCreate} data-testid="exchange-rate-add">
-						<Plus className="size-4" />
-						Add rate
-					</Button>
-				</div>
+				{showChromeSkeleton ? (
+					<div className="flex flex-wrap gap-2">
+						<Skeleton className="h-9 w-28 rounded-full" />
+						<Skeleton className="h-9 w-28 rounded-full" />
+					</div>
+				) : (
+					<div className="flex flex-wrap gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => void handleSyncToday()}
+							disabled={syncTodayMutation.isPending}
+							data-testid="exchange-rate-sync-today"
+						>
+							<RefreshCw
+								className={cn('size-4', syncTodayMutation.isPending && 'animate-spin')}
+							/>
+							Sync today
+						</Button>
+						<Button type="button" onClick={openCreate} data-testid="exchange-rate-add">
+							<Plus className="size-4" />
+							Add rate
+						</Button>
+					</div>
+				)}
 			</header>
 
-			<div className="flex flex-wrap gap-2" role="tablist" aria-label="Admin panels">
-				{(
-					[
-						{ value: 'rates', label: 'Rates' },
-						{ value: 'logs', label: 'Sync logs' },
-					] as const
-				).map((item) => {
-					const active = tab === item.value;
-					return (
-						<button
-							key={item.value}
-							type="button"
-							role="tab"
-							aria-selected={active}
-							onClick={() => setTab(item.value)}
-							className={cn(
-								'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
-								active
-									? 'bg-primary text-primary-foreground shadow-sm'
-									: 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
-							)}
-							data-testid={`exchange-rate-tab-${item.value}`}
-						>
-							{item.label}
-						</button>
-					);
-				})}
-			</div>
+			{showChromeSkeleton ? (
+				<div className="flex flex-wrap gap-2" aria-hidden="true">
+					<Skeleton className="h-8 w-20 rounded-full" />
+					<Skeleton className="h-8 w-24 rounded-full" />
+				</div>
+			) : (
+				<div className="flex flex-wrap gap-2" role="tablist" aria-label="Admin panels">
+					{(
+						[
+							{ value: 'rates', label: 'Rates' },
+							{ value: 'logs', label: 'Sync logs' },
+						] as const
+					).map((item) => {
+						const active = tab === item.value;
+						return (
+							<button
+								key={item.value}
+								type="button"
+								role="tab"
+								aria-selected={active}
+								onClick={() => setTab(item.value)}
+								className={cn(
+									'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
+									active
+										? 'bg-primary text-primary-foreground shadow-sm'
+										: 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+								)}
+								data-testid={`exchange-rate-tab-${item.value}`}
+							>
+								{item.label}
+							</button>
+						);
+					})}
+				</div>
+			)}
 
 			{tab === 'rates' ? (
 				<>
-					<ExchangeRateFilters value={filters} onChange={handleFiltersChange} />
+					{showChromeSkeleton ? (
+						<div className="flex flex-wrap gap-2" aria-hidden="true">
+							<Skeleton className="h-9 w-28 rounded-full" />
+							<Skeleton className="h-9 w-28 rounded-full" />
+							<Skeleton className="h-9 w-28 rounded-full" />
+						</div>
+					) : (
+						<ExchangeRateFilters value={filters} onChange={handleFiltersChange} />
+					)}
 
 					{isLoading ? (
 						<div className="space-y-2">

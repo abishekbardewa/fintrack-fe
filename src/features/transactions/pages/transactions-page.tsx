@@ -133,6 +133,7 @@ export function TransactionsPage() {
 	const empty = !isLoading && !isError && items.length === 0;
 	const filteredEmpty = empty && filtersActive;
 	const pageNum = data?.page ?? page;
+	const showChromeSkeleton = isLoading && !data;
 
 	const deleteLabel =
 		deleting?.description?.trim() ||
@@ -147,28 +148,45 @@ export function TransactionsPage() {
 						Review and manage your financial activity.
 					</p>
 				</div>
-				<div className="flex flex-wrap items-center gap-2">
-					<Button type="button" onClick={openCreate} data-testid="transaction-add">
-						<Plus className="size-4" />
-						New Transaction
-					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						onClick={() => setImportOpen(true)}
-						data-testid="transaction-import"
-					>
-						<Upload className="size-4" />
-						Import
-					</Button>
-					<TransactionExportMenu
-						filtersActive={filtersActive}
-						onSelect={setExportSelection}
-					/>
-				</div>
+				{showChromeSkeleton ? (
+					<div className="flex flex-wrap items-center gap-2">
+						<Skeleton className="h-9 w-40 rounded-full" />
+						<Skeleton className="h-9 w-24 rounded-full" />
+						<Skeleton className="h-9 w-24 rounded-full" />
+					</div>
+				) : (
+					<div className="flex flex-wrap items-center gap-2">
+						<Button type="button" onClick={openCreate} data-testid="transaction-add">
+							<Plus className="size-4" />
+							New Transaction
+						</Button>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setImportOpen(true)}
+							data-testid="transaction-import"
+						>
+							<Upload className="size-4" />
+							Import
+						</Button>
+						<TransactionExportMenu
+							filtersActive={filtersActive}
+							onSelect={setExportSelection}
+						/>
+					</div>
+				)}
 			</header>
 
-			<TransactionFilters value={filters} onChange={handleFiltersChange} />
+			{showChromeSkeleton ? (
+				<div className="flex flex-wrap gap-2" aria-hidden="true">
+					<Skeleton className="h-9 w-28 rounded-full" />
+					<Skeleton className="h-9 w-36 rounded-full" />
+					<Skeleton className="h-9 w-32 rounded-full" />
+					<Skeleton className="h-9 w-24 rounded-full" />
+				</div>
+			) : (
+				<TransactionFilters value={filters} onChange={handleFiltersChange} />
+			)}
 
 			<div className="min-w-0 space-y-3">
 				{isLoading ? (

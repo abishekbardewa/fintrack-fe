@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { Info, TrendingDown, TrendingUp } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { DashboardRecentTransaction } from '@/features/dashboard/types';
 import { formatDisplayDate, formatMoney } from '@/features/transactions/utils';
 import { cn } from '@/lib/utils';
@@ -42,7 +43,8 @@ export function DashboardRecentTransactions({ items, currency }: DashboardRecent
 				<ul className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm divide-y divide-border">
 					{rows.map((tx) => {
 						const isIncome = tx.type === 'income';
-						const category = tx.subcategoryName?.trim() || tx.categoryName;
+						const subcategory = tx.subcategoryName?.trim();
+						const category = subcategory || tx.categoryName;
 
 						return (
 							<li
@@ -61,11 +63,32 @@ export function DashboardRecentTransactions({ items, currency }: DashboardRecent
 										)}
 										aria-label={tx.type}
 									>
-										{isIncome ? <ArrowDownLeft /> : <ArrowUpRight />}
+										{isIncome ? <TrendingUp /> : <TrendingDown />}
 									</Badge>
-									<Badge variant="secondary" className="max-w-full truncate px-2.5 py-0.5">
-										{category}
-									</Badge>
+									<span className="inline-flex min-w-0 max-w-full items-center gap-1">
+										<Badge
+											variant="secondary"
+											className="max-w-full truncate px-2.5 py-0.5"
+										>
+											{category}
+										</Badge>
+										{subcategory ? (
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<button
+														type="button"
+														className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+														aria-label={`This falls under ${tx.categoryName} category`}
+													>
+														<Info className="size-3.5" aria-hidden="true" />
+													</button>
+												</TooltipTrigger>
+												<TooltipContent sideOffset={6}>
+													This falls under {tx.categoryName} category
+												</TooltipContent>
+											</Tooltip>
+										) : null}
+									</span>
 									<Badge variant="outline" className="shrink-0 px-2.5 py-0.5 text-muted-foreground">
 										{formatDisplayDate(tx.date)}
 									</Badge>

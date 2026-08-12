@@ -55,10 +55,15 @@ export function TrendsPage() {
 
 	useEffect(() => {
 		if (!data?.categoryOptions || isPlaceholderData) return;
-		const optionIds = new Set(data.categoryOptions.map((category) => category.id));
+		const options = data.categoryOptions;
+		const optionIds = new Set(options.map((category) => category.id));
 		setSelectedCategoryIds((prev) => {
 			const valid = prev.filter((id) => optionIds.has(id));
-			return sameIds(valid, prev) ? prev : valid;
+			if (valid.length > 0) {
+				return sameIds(valid, prev) ? prev : valid;
+			}
+			const defaults = options.slice(0, 2).map((category) => category.id);
+			return sameIds(defaults, prev) ? prev : defaults;
 		});
 	}, [data, isPlaceholderData]);
 
@@ -86,85 +91,94 @@ export function TrendsPage() {
 		: '/transactions';
 
 	const showError = isError && !data && toApiError(error).statusCode !== 422;
+	const showChromeSkeleton = isLoading && !data;
 
 	return (
 		<div className="flex flex-col gap-8" data-testid="trends-page">
 			<header>
 				<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Trends</h1>
-				<p className="mt-1 text-sm text-muted-foreground">
-					{data?.range.label ?? 'Loading…'}
-				</p>
+				<p className="mt-1 text-sm text-muted-foreground">Patterns that help you decide better.</p>
 			</header>
 
-			<div className="flex flex-wrap items-center gap-2" data-testid="trends-range-row">
-				<div
-					className="flex flex-wrap items-center gap-2"
-					role="tablist"
-					aria-label="Range"
-					data-testid="trends-range-tabs"
-				>
-					{PRIMARY_RANGES.map((item) => {
-						const active = range === item.value;
-						return (
-							<button
-								key={item.value}
-								type="button"
-								role="tab"
-								aria-selected={active}
-								onClick={() => setRange(item.value)}
-								className={cn(
-									'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
-									active
-										? 'bg-primary text-primary-foreground shadow-sm'
-										: 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
-								)}
-								data-testid={`trends-range-${item.value}`}
-							>
-								{item.label}
-							</button>
-						);
-					})}
-
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button
-								type="button"
-								variant="outline"
-								size="icon-sm"
-								aria-label="More ranges"
-								className={cn(moreActive && 'border-primary text-primary')}
-								data-testid="trends-range-more"
-							>
-								<MoreHorizontal className="size-4" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="start">
-							{MORE_RANGES.map((item) => (
-								<DropdownMenuItem
+			{showChromeSkeleton ? (
+				<div className="flex flex-wrap items-center gap-2" aria-hidden="true">
+					<Skeleton className="h-8 w-32 rounded-full" />
+					<Skeleton className="h-8 w-24 rounded-full" />
+					<Skeleton className="h-8 w-24 rounded-full" />
+					<Skeleton className="size-8 rounded-full" />
+					<Skeleton className="ml-auto h-8 w-36 rounded-full" />
+				</div>
+			) : (
+				<div className="flex flex-wrap items-center gap-2" data-testid="trends-range-row">
+					<div
+						className="flex flex-wrap items-center gap-2"
+						role="tablist"
+						aria-label="Range"
+						data-testid="trends-range-tabs"
+					>
+						{PRIMARY_RANGES.map((item) => {
+							const active = range === item.value;
+							return (
+								<button
 									key={item.value}
+									type="button"
+									role="tab"
+									aria-selected={active}
 									onClick={() => setRange(item.value)}
+									className={cn(
+										'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
+										active
+											? 'bg-primary text-primary-foreground shadow-sm'
+											: 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+									)}
 									data-testid={`trends-range-${item.value}`}
-									className={cn(range === item.value && 'bg-accent')}
 								>
 									{item.label}
-								</DropdownMenuItem>
-							))}
-						</DropdownMenuContent>
-					</DropdownMenu>
+								</button>
+							);
+						})}
+
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									type="button"
+									variant="outline"
+									size="icon-sm"
+									aria-label="More ranges"
+									className={cn(moreActive && 'border-primary text-primary')}
+									data-testid="trends-range-more"
+								>
+									<MoreHorizontal className="size-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="start">
+								{MORE_RANGES.map((item) => (
+									<DropdownMenuItem
+										key={item.value}
+										onClick={() => setRange(item.value)}
+										data-testid={`trends-range-${item.value}`}
+										className={cn(range === item.value && 'bg-accent')}
+									>
+										{item.label}
+									</DropdownMenuItem>
+								))}
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
+
+					<Button
+						asChild
+						variant="outline"
+						size="sm"
+						className="ml-auto"
+						data-testid="trends-view-transactions"
+					>
+						<Link to={transactionsHref}>View transactions</Link>
+					</Button>
 				</div>
+			)}
 
-				<Button
-					asChild
-					variant="outline"
-					size="sm"
-					className="ml-auto"
-					data-testid="trends-view-transactions"
-				>
-					<Link to={transactionsHref}>View transactions</Link>
-				</Button>
-			</div>
-
-			{isLoading && !data ? (
+			{showChromeSkeleton ? (
 				<div className="flex flex-col gap-4" data-testid="trends-loading">
 					<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
 						<Skeleton className="h-24 rounded-2xl" />

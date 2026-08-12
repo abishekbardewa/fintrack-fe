@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Info, MoreHorizontal, Pencil, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Transaction } from '@/features/transactions/types';
 import { formatDisplayDate, formatMoney } from '@/features/transactions/utils';
 import { cn } from '@/lib/utils';
@@ -28,7 +29,7 @@ function categoryLabel(tx: Transaction, labels: Map<string, string>) {
 }
 
 const ROW_GRID =
-	'sm:grid-cols-[8.5rem_7.5rem_minmax(0,1fr)_minmax(0,1.2fr)_7rem_8rem_2.5rem]';
+	'sm:grid-cols-[8.5rem_minmax(0,1fr)_minmax(0,1.2fr)_7rem_9rem_2.5rem]';
 
 export function TransactionList({
 	items,
@@ -49,7 +50,6 @@ export function TransactionList({
 				)}
 			>
 				<span>Spent Date</span>
-				<span>Type</span>
 				<span>Category</span>
 				<span>Description</span>
 				<span>Updated</span>
@@ -60,7 +60,10 @@ export function TransactionList({
 			<ul className="divide-y divide-border">
 				{items.map((tx) => {
 					const isIncome = tx.type === 'income';
+					const KindIcon = isIncome ? TrendingUp : TrendingDown;
 					const category = categoryLabel(tx, categoryLabels);
+					const mainCategory =
+						tx.subcategoryId != null ? categoryLabels.get(tx.categoryId) : undefined;
 					const description = tx.description?.trim() || '';
 					const updated = tx.updatedAt ? formatDisplayDate(tx.updatedAt) : '—';
 					const showPreferred =
@@ -84,39 +87,47 @@ export function TransactionList({
 								<div className="text-right sm:hidden">
 									<p
 										className={cn(
-											'font-semibold tabular-nums',
+											'inline-flex items-center gap-1 font-semibold tabular-nums',
 											isIncome ? 'text-income' : 'text-foreground',
 										)}
 									>
+										<span
+											className={cn(
+												'flex size-5 shrink-0 items-center justify-center rounded-full',
+												isIncome
+													? 'bg-income/15 text-income'
+													: 'bg-expense/15 text-expense',
+											)}
+											aria-label={tx.type}
+										>
+											<KindIcon className="size-3" aria-hidden="true" />
+										</span>
 										{isIncome ? '+' : '−'}
 										{formatMoney(tx.amount, tx.currency)}
 									</p>
 								</div>
 							</div>
 
-							<div className="mb-2 sm:mb-0">
-								<Badge
-									variant="secondary"
-									className={cn(
-										'gap-1 px-2 py-1 font-medium capitalize',
-										isIncome
-											? 'bg-income/15 text-income'
-											: 'bg-expense/15 text-expense',
-									)}
-								>
-									{isIncome ? (
-										<ArrowDownLeft className="size-3.5" />
-									) : (
-										<ArrowUpRight className="size-3.5" />
-									)}
-									{tx.type}
-								</Badge>
-							</div>
-
-							<div className="mb-2 min-w-0 sm:mb-0">
+							<div className="mb-2 flex min-w-0 items-center gap-1 sm:mb-0">
 								<Badge variant="secondary" className="max-w-full truncate px-2.5 py-0.5">
 									{category}
 								</Badge>
+								{mainCategory ? (
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<button
+												type="button"
+												className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+												aria-label={`This falls under ${mainCategory} category`}
+											>
+												<Info className="size-3.5" aria-hidden="true" />
+											</button>
+										</TooltipTrigger>
+										<TooltipContent sideOffset={6}>
+											This falls under {mainCategory} category
+										</TooltipContent>
+									</Tooltip>
+								) : null}
 							</div>
 
 							<div className="mb-2 min-w-0 sm:mb-0">
@@ -135,10 +146,21 @@ export function TransactionList({
 							<div className="hidden text-right sm:block">
 								<p
 									className={cn(
-										'font-semibold tabular-nums',
+										'inline-flex items-center justify-end gap-1 font-semibold tabular-nums',
 										isIncome ? 'text-income' : 'text-foreground',
 									)}
 								>
+									<span
+										className={cn(
+											'flex size-5 shrink-0 items-center justify-center rounded-full',
+											isIncome
+												? 'bg-income/15 text-income'
+												: 'bg-expense/15 text-expense',
+										)}
+										aria-label={tx.type}
+									>
+										<KindIcon className="size-3" aria-hidden="true" />
+									</span>
 									{isIncome ? '+' : '−'}
 									{formatMoney(tx.amount, tx.currency)}
 								</p>
