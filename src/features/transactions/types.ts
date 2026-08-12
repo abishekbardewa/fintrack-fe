@@ -97,3 +97,29 @@ export interface ImportTransactionsData {
 	imported: number;
 	items: Transaction[];
 }
+
+export interface TransactionMonthSummaryTotals {
+	spent: number;
+	income: number;
+	count: number;
+}
+
+export interface TransactionMonthSummaryDay {
+	date: string;
+	spent: number;
+	income: number;
+	count: number;
+}
+
+export interface TransactionMonthSummaryData {
+	year: number;
+	month: number;
+	currency: string;
+	monthTotals: TransactionMonthSummaryTotals;
+	days: TransactionMonthSummaryDay[];
+}
+
+export interface TransactionMonthSummaryParams {
+	year: number;
+	month: number;
+}

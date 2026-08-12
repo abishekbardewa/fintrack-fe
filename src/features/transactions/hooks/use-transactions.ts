@@ -5,6 +5,7 @@ import { trendsKeys } from '@/features/trends/hooks/use-trends';
 import {
 	createTransaction,
 	deleteTransaction,
+	getTransactionMonthSummary,
 	importTransactions,
 	listTransactions,
 	suggestDescriptions,
@@ -14,6 +15,7 @@ import type {
 	CreateTransactionRequest,
 	ImportTransactionsRequest,
 	TransactionListParams,
+	TransactionMonthSummaryParams,
 	UpdateTransactionRequest,
 } from '@/features/transactions/types';
 
@@ -25,6 +27,8 @@ function invalidateAnalytics(queryClient: ReturnType<typeof useQueryClient>) {
 export const transactionKeys = {
 	all: ['transactions'] as const,
 	list: (params: TransactionListParams) => [...transactionKeys.all, 'list', params] as const,
+	monthSummary: (params: TransactionMonthSummaryParams) =>
+		[...transactionKeys.all, 'month-summary', params] as const,
 	suggestions: (params: {
 		categoryId: string;
 		subcategoryId?: string;
@@ -37,6 +41,13 @@ export function useTransactionsQuery(params: TransactionListParams) {
 		queryKey: transactionKeys.list(params),
 		queryFn: () => listTransactions(params),
 		placeholderData: (previous) => previous,
+	});
+}
+
+export function useTransactionMonthSummaryQuery(params: TransactionMonthSummaryParams) {
+	return useQuery({
+		queryKey: transactionKeys.monthSummary(params),
+		queryFn: () => getTransactionMonthSummary(params),
 	});
 }
 

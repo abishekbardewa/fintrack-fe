@@ -9,6 +9,7 @@ import { ErrorState } from '@/components/common/error-state';
 import { NumberedPagination } from '@/components/common/numbered-pagination';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { selectUser } from '@/features/auth/authSlice';
 import { useCategoriesQuery } from '@/features/categories/hooks/use-categories';
 import { TransactionDeleteDialog } from '@/features/transactions/components/transaction-delete-dialog';
@@ -21,6 +22,7 @@ import { TransactionFilters } from '@/features/transactions/components/transacti
 import { TransactionFormDialog } from '@/features/transactions/components/transaction-form-dialog';
 import { TransactionImportDialog } from '@/features/transactions/components/transaction-import-dialog';
 import { TransactionList } from '@/features/transactions/components/transaction-list';
+import { TransactionPulse } from '@/features/transactions/components/transaction-pulse';
 import {
 	useDeleteTransactionMutation,
 	useTransactionsQuery,
@@ -151,8 +153,8 @@ export function TransactionsPage() {
 				{showChromeSkeleton ? (
 					<div className="flex flex-wrap items-center gap-2">
 						<Skeleton className="h-9 w-40 rounded-full" />
-						<Skeleton className="h-9 w-24 rounded-full" />
-						<Skeleton className="h-9 w-24 rounded-full" />
+						<Skeleton className="size-9 rounded-full" />
+						<Skeleton className="size-9 rounded-full" />
 					</div>
 				) : (
 					<div className="flex flex-wrap items-center gap-2">
@@ -160,15 +162,21 @@ export function TransactionsPage() {
 							<Plus className="size-4" />
 							New Transaction
 						</Button>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setImportOpen(true)}
-							data-testid="transaction-import"
-						>
-							<Upload className="size-4" />
-							Import
-						</Button>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									type="button"
+									variant="outline"
+									size="icon"
+									onClick={() => setImportOpen(true)}
+									aria-label="Import"
+									data-testid="transaction-import"
+								>
+									<Upload className="size-4" aria-hidden="true" />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent sideOffset={6}>Import</TooltipContent>
+						</Tooltip>
 						<TransactionExportMenu
 							filtersActive={filtersActive}
 							onSelect={setExportSelection}
@@ -177,73 +185,87 @@ export function TransactionsPage() {
 				)}
 			</header>
 
-			{showChromeSkeleton ? (
-				<div className="flex flex-wrap gap-2" aria-hidden="true">
-					<Skeleton className="h-9 w-28 rounded-full" />
-					<Skeleton className="h-9 w-36 rounded-full" />
-					<Skeleton className="h-9 w-32 rounded-full" />
-					<Skeleton className="h-9 w-24 rounded-full" />
+			<div className="space-y-3">
+				<div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_19rem]">
+					{showChromeSkeleton ? (
+						<div className="flex flex-wrap gap-2" aria-hidden="true">
+							<Skeleton className="h-9 w-28 rounded-full" />
+							<Skeleton className="h-9 w-36 rounded-full" />
+							<Skeleton className="h-9 w-32 rounded-full" />
+							<Skeleton className="h-9 w-24 rounded-full" />
+						</div>
+					) : (
+						<TransactionFilters value={filters} onChange={handleFiltersChange} />
+					)}
 				</div>
-			) : (
-				<TransactionFilters value={filters} onChange={handleFiltersChange} />
-			)}
 
-			<div className="min-w-0 space-y-3">
-				{isLoading ? (
-					<div className="space-y-0 overflow-hidden rounded-xl border border-border">
-						<Skeleton className="h-10 w-full rounded-none" />
-						<Skeleton className="h-16 w-full rounded-none" />
-						<Skeleton className="h-16 w-full rounded-none" />
-						<Skeleton className="h-16 w-full rounded-none" />
+				<div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_19rem]">
+					<div className="min-w-0 space-y-3">
+						{isLoading ? (
+							<div className="space-y-0 overflow-hidden rounded-xl border border-border">
+								<Skeleton className="h-10 w-full rounded-none" />
+								<Skeleton className="h-16 w-full rounded-none" />
+								<Skeleton className="h-16 w-full rounded-none" />
+								<Skeleton className="h-16 w-full rounded-none" />
+							</div>
+						) : null}
+
+						{isError ? (
+							<ErrorState
+								title="Could not load transactions"
+								description="Check your connection and try again."
+								onRetry={() => void refetch()}
+							/>
+						) : null}
+
+						{empty ? (
+							<EmptyState
+								title={filteredEmpty ? 'No matching transactions' : 'No transactions yet'}
+								description={
+									filteredEmpty
+										? 'Try adjusting or clearing your filters.'
+										: 'Add your first income or expense to start tracking.'
+								}
+								icon={Receipt}
+								action={
+									filteredEmpty ? undefined : (
+										<Button type="button" onClick={openCreate}>
+											<Plus className="size-4" />
+											New Transaction
+										</Button>
+									)
+								}
+							/>
+						) : null}
+
+						{!isLoading && !isError && items.length > 0 ? (
+							<>
+								<TransactionList
+									items={items}
+									categoryLabels={categoryLabels}
+									preferredCurrency={preferredCurrency}
+									onEdit={openEdit}
+									onDelete={setDeleting}
+								/>
+
+								<NumberedPagination
+									page={pageNum}
+									totalPages={totalPages}
+									disabled={isFetching}
+									onPageChange={setPage}
+								/>
+							</>
+						) : null}
 					</div>
-				) : null}
 
-				{isError ? (
-					<ErrorState
-						title="Could not load transactions"
-						description="Check your connection and try again."
-						onRetry={() => void refetch()}
-					/>
-				) : null}
-
-				{empty ? (
-					<EmptyState
-						title={filteredEmpty ? 'No matching transactions' : 'No transactions yet'}
-						description={
-							filteredEmpty
-								? 'Try adjusting or clearing your filters.'
-								: 'Add your first income or expense to start tracking.'
-						}
-						icon={Receipt}
-						action={
-							filteredEmpty ? undefined : (
-								<Button type="button" onClick={openCreate}>
-									<Plus className="size-4" />
-									New Transaction
-								</Button>
-							)
-						}
-					/>
-				) : null}
-
-				{!isLoading && !isError && items.length > 0 ? (
-					<>
-						<TransactionList
-							items={items}
-							categoryLabels={categoryLabels}
-							preferredCurrency={preferredCurrency}
-							onEdit={openEdit}
-							onDelete={setDeleting}
-						/>
-
-						<NumberedPagination
-							page={pageNum}
-							totalPages={totalPages}
-							disabled={isFetching}
-							onPageChange={setPage}
-						/>
-					</>
-				) : null}
+					<aside className="lg:sticky lg:top-4">
+						{showChromeSkeleton ? (
+							<Skeleton className="h-[28rem] w-full rounded-xl" />
+						) : (
+							<TransactionPulse currency={preferredCurrency} />
+						)}
+					</aside>
+				</div>
 			</div>
 
 			<TransactionFormDialog

@@ -8,6 +8,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { TransactionExportSelection } from '@/features/transactions/components/transaction-export-dialog';
 import { EXPORT_PRESETS } from '@/features/transactions/utils';
 
@@ -19,12 +20,22 @@ interface TransactionExportMenuProps {
 export function TransactionExportMenu({ filtersActive, onSelect }: TransactionExportMenuProps) {
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<Button type="button" variant="outline" data-testid="transaction-export">
-					<Download className="size-4" />
-					Export
-				</Button>
-			</DropdownMenuTrigger>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<DropdownMenuTrigger asChild>
+						<Button
+							type="button"
+							variant="outline"
+							size="icon"
+							aria-label="Export"
+							data-testid="transaction-export"
+						>
+							<Download className="size-4" aria-hidden="true" />
+						</Button>
+					</DropdownMenuTrigger>
+				</TooltipTrigger>
+				<TooltipContent sideOffset={6}>Export</TooltipContent>
+			</Tooltip>
 			<DropdownMenuContent align="end" className="min-w-48">
 				{EXPORT_PRESETS.map((preset) => (
 					<DropdownMenuItem
