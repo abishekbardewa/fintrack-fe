@@ -4,6 +4,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Category, CategoryKind, CategoryTreeNode } from '@/features/categories/types';
+import {
+	MAX_MAIN_CATEGORIES_PER_KIND,
+	MAX_SUBCATEGORIES_PER_PARENT,
+} from '@/features/categories/types';
 import { cn } from '@/lib/utils';
 
 interface CategoryListProps {
@@ -23,24 +27,36 @@ export function CategoryList({
 	onRename,
 	onDelete,
 }: CategoryListProps) {
+	const mainAtCap = tree.length >= MAX_MAIN_CATEGORIES_PER_KIND;
+
 	return (
 		<div
 			className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
 			data-testid="category-list"
 		>
-			<button
-				type="button"
-				onClick={onAddMain}
-				className="flex min-h-44 flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-border/70 bg-muted/50 text-muted-foreground shadow-sm transition-colors hover:border-border hover:bg-muted hover:text-foreground"
-				data-testid="category-add-main-card"
-			>
-				<span className="inline-flex size-8 items-center justify-center rounded-full bg-card shadow-sm">
-					<Plus className="size-4" aria-hidden="true" />
-				</span>
-				<span className="text-sm font-medium">
-					Add {kind === 'income' ? 'income' : 'expense'} category
-				</span>
-			</button>
+			{mainAtCap ? (
+				<div
+					className="flex min-h-44 flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-border/70 bg-muted/50 px-5 text-center text-muted-foreground shadow-sm"
+					data-testid="category-add-main-card-max"
+				>
+					<p className="text-sm font-medium text-foreground">Limit reached</p>
+					<p className="text-xs text-muted-foreground">Remove one to add another.</p>
+				</div>
+			) : (
+				<button
+					type="button"
+					onClick={onAddMain}
+					className="flex min-h-44 flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-border/70 bg-muted/50 text-muted-foreground shadow-sm transition-colors hover:border-border hover:bg-muted hover:text-foreground"
+					data-testid="category-add-main-card"
+				>
+					<span className="inline-flex size-8 items-center justify-center rounded-full bg-card shadow-sm">
+						<Plus className="size-4" aria-hidden="true" />
+					</span>
+					<span className="text-sm font-medium">
+						Add {kind === 'income' ? 'income' : 'expense'} category
+					</span>
+				</button>
+			)}
 
 			{tree.map((main) => (
 				<CategoryCard
@@ -113,6 +129,7 @@ function CategoryCard({
 	const isIncome = kind === 'income';
 	const KindIcon = isIncome ? TrendingUp : TrendingDown;
 	const hasSubs = main.children.length > 0;
+	const subAtCap = main.children.length >= MAX_SUBCATEGORIES_PER_PARENT;
 
 	return (
 		<article
@@ -168,19 +185,29 @@ function CategoryCard({
 							</button>
 						</Badge>
 					))}
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<button
-								type="button"
-								aria-label="Add subcategory"
-								onClick={onAddSub}
-								className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-card text-foreground shadow-sm hover:bg-card/90"
-							>
-								<Plus className="size-3" aria-hidden="true" />
-							</button>
-						</TooltipTrigger>
-						<TooltipContent sideOffset={6}>Add subcategory</TooltipContent>
-					</Tooltip>
+					{subAtCap ? (
+						<Badge
+							variant="secondary"
+							className="max-w-full border-destructive/20 bg-destructive/10 px-2 py-1 text-[11px] leading-none font-normal text-destructive shadow-none"
+							data-testid={`category-sub-max-${main.id}`}
+						>
+							Limit reached. Remove one to add.
+						</Badge>
+					) : (
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<button
+									type="button"
+									aria-label="Add subcategory"
+									onClick={onAddSub}
+									className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-card text-foreground shadow-sm hover:bg-card/90"
+								>
+									<Plus className="size-3" aria-hidden="true" />
+								</button>
+							</TooltipTrigger>
+							<TooltipContent sideOffset={6}>Add subcategory</TooltipContent>
+						</Tooltip>
+					)}
 				</div>
 			) : (
 				<div className="flex flex-1 flex-col items-center justify-center gap-2 px-5 pb-5">

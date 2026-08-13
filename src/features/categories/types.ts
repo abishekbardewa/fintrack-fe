@@ -1,5 +1,8 @@
 export type CategoryKind = 'expense' | 'income';
 
+export const MAX_MAIN_CATEGORIES_PER_KIND = 100;
+export const MAX_SUBCATEGORIES_PER_PARENT = 100;
+
 export interface Category {
 	id: string;
 	name: string;

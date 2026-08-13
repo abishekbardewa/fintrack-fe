@@ -1,6 +1,7 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { useAppSelector } from '@/app/hooks';
 import { Button } from '@/components/ui/button';
@@ -19,11 +20,22 @@ import {
 	Select,
 	SelectContent,
 	SelectItem,
+	SelectSeparator,
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
 import { selectUser } from '@/features/auth/authSlice';
-import { useCategoriesQuery } from '@/features/categories/hooks/use-categories';
+import { CategoryFormDialog } from '@/features/categories/components/category-form-dialog';
+import {
+	categoryKeys,
+	useCategoriesQuery,
+	useCreateCategoryMutation,
+} from '@/features/categories/hooks/use-categories';
+import type { CategoriesListData, Category } from '@/features/categories/types';
+import {
+	MAX_MAIN_CATEGORIES_PER_KIND,
+	MAX_SUBCATEGORIES_PER_PARENT,
+} from '@/features/categories/types';
 import { buildCategoryTree } from '@/features/categories/utils';
 import { AutoGrowDescription } from '@/features/transactions/components/auto-grow-description';
 import {
@@ -41,6 +53,20 @@ import { dateInputToIso, todayDateInput, toDateInputValue } from '@/features/tra
 import { getErrorMessage } from '@/lib/api/errors';
 import { DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from '@/lib/currencies';
 import { cn } from '@/lib/utils';
+
+type CategoryCreateMode = 'main' | 'sub';
+
+const ADD_ITEM_CLASS =
+	'relative flex w-full cursor-default items-center rounded-sm px-2 py-1.5 text-left text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50';
+
+function appendCategory(
+	old: CategoriesListData | undefined,
+	category: Category,
+): CategoriesListData {
+	if (!old) return { categories: [category] };
+	if (old.categories.some((item) => item.id === category.id)) return old;
+	return { categories: [...old.categories, category] };
+}
 
 interface TransactionFormDialogProps {
 	open: boolean;
@@ -113,11 +139,19 @@ function TransactionFormFields({
 }: TransactionFormFieldsProps) {
 	const createMutation = useCreateTransactionMutation();
 	const updateMutation = useUpdateTransactionMutation();
+	const createCategoryMutation = useCreateCategoryMutation();
+	const queryClient = useQueryClient();
 	const [values, setValues] = useState<TransactionFormValues>(() =>
 		transaction ? fromTransaction(transaction) : emptyValues(defaultCurrency),
 	);
 	const [errors, setErrors] = useState<Partial<Record<keyof TransactionFormValues, string>>>({});
 	const [descFocused, setDescFocused] = useState(false);
+	const [categoryCreateMode, setCategoryCreateMode] = useState<CategoryCreateMode | null>(null);
+	const [categorySelectOpen, setCategorySelectOpen] = useState(false);
+	const [subcategorySelectOpen, setSubcategorySelectOpen] = useState(false);
+	const createModeRef = useRef<CategoryCreateMode | null>(null);
+	const pendingCategoryIdRef = useRef<string | null>(null);
+	const pendingSubcategoryIdRef = useRef<string | null>(null);
 
 	const { data: categoryData } = useCategoriesQuery(values.type);
 	const tree = useMemo(
@@ -126,6 +160,35 @@ function TransactionFormFields({
 	);
 	const selectedMain = tree.find((c) => c.id === values.categoryId);
 	const subs = selectedMain?.children ?? [];
+	const mainAtCap = tree.length >= MAX_MAIN_CATEGORIES_PER_KIND;
+	const subAtCap = subs.length >= MAX_SUBCATEGORIES_PER_PARENT;
+
+	useEffect(() => {
+		const pendingCategoryId = pendingCategoryIdRef.current;
+		if (pendingCategoryId && tree.some((main) => main.id === pendingCategoryId)) {
+			setValues((prev) => ({
+				...prev,
+				categoryId: pendingCategoryId,
+				subcategoryId: '',
+			}));
+			setErrors((prev) => ({
+				...prev,
+				categoryId: undefined,
+				subcategoryId: undefined,
+			}));
+			pendingCategoryIdRef.current = null;
+		}
+
+		const pendingSubcategoryId = pendingSubcategoryIdRef.current;
+		if (
+			pendingSubcategoryId &&
+			tree.some((main) => main.children.some((sub) => sub.id === pendingSubcategoryId))
+		) {
+			setValues((prev) => ({ ...prev, subcategoryId: pendingSubcategoryId }));
+			setErrors((prev) => ({ ...prev, subcategoryId: undefined }));
+			pendingSubcategoryIdRef.current = null;
+		}
+	}, [tree]);
 
 	const suggestionsQuery = useSuggestDescriptionsQuery(
 		{
@@ -160,9 +223,85 @@ function TransactionFormFields({
 		}));
 	};
 
+	const openCategoryCreate = (mode: CategoryCreateMode) => {
+		createModeRef.current = mode;
+		setCategorySelectOpen(false);
+		setSubcategorySelectOpen(false);
+		setTimeout(() => setCategoryCreateMode(mode), 0);
+	};
+
 	const handleCategoryChange = (categoryId: string) => {
+		pendingCategoryIdRef.current = null;
+		pendingSubcategoryIdRef.current = null;
 		setValues((prev) => ({ ...prev, categoryId, subcategoryId: '' }));
 		setErrors((prev) => ({ ...prev, categoryId: undefined, subcategoryId: undefined }));
+	};
+
+	const handleSubcategoryChange = (subcategoryId: string) => {
+		pendingSubcategoryIdRef.current = null;
+		setField('subcategoryId', subcategoryId === '__none__' ? '' : subcategoryId);
+	};
+
+	const cacheCreatedCategory = (category: Category) => {
+		queryClient.setQueryData(categoryKeys.list(values.type), (old: CategoriesListData | undefined) =>
+			appendCategory(old, category),
+		);
+		queryClient.setQueryData(categoryKeys.list(), (old: CategoriesListData | undefined) =>
+			appendCategory(old, category),
+		);
+	};
+
+	const handleCategoryCreate = async (name: string) => {
+		const mode = createModeRef.current ?? categoryCreateMode;
+		if (!mode) return;
+
+		try {
+			if (mode === 'main') {
+				const data = await createCategoryMutation.mutateAsync({
+					name,
+					kind: values.type,
+				});
+				const created = data.category;
+				if (!created?.id) {
+					throw new Error('Category created without an id.');
+				}
+				pendingCategoryIdRef.current = created.id;
+				pendingSubcategoryIdRef.current = null;
+				cacheCreatedCategory(created);
+				setValues((prev) => ({
+					...prev,
+					categoryId: created.id,
+					subcategoryId: '',
+				}));
+				setErrors((prev) => ({
+					...prev,
+					categoryId: undefined,
+					subcategoryId: undefined,
+				}));
+				toast.success('Category created');
+			} else {
+				const parentId = values.categoryId;
+				if (!parentId) return;
+				const data = await createCategoryMutation.mutateAsync({
+					name,
+					kind: values.type,
+					parentCategoryId: parentId,
+				});
+				const created = data.category;
+				if (!created?.id) {
+					throw new Error('Subcategory created without an id.');
+				}
+				pendingSubcategoryIdRef.current = created.id;
+				cacheCreatedCategory(created);
+				setValues((prev) => ({ ...prev, subcategoryId: created.id }));
+				setErrors((prev) => ({ ...prev, subcategoryId: undefined }));
+				toast.success('Subcategory created');
+			}
+			createModeRef.current = null;
+			setCategoryCreateMode(null);
+		} catch (error) {
+			toast.error(getErrorMessage(error, 'Could not create category.'));
+		}
 	};
 
 	const handleSubmit = async (e: FormEvent) => {
@@ -199,7 +338,8 @@ function TransactionFormFields({
 	};
 
 	return (
-		<form onSubmit={handleSubmit} noValidate className="grid gap-0">
+		<>
+			<form onSubmit={handleSubmit} noValidate className="grid gap-0">
 			<DialogHeader className="gap-1 border-b border-border px-6 py-5 pr-12 text-left">
 				<DialogTitle>{isEdit ? 'Edit transaction' : 'Add transaction'}</DialogTitle>
 				<DialogDescription>
@@ -300,6 +440,9 @@ function TransactionFormFields({
 						<div className="grid gap-2">
 							<Label htmlFor="tx-category">Category</Label>
 							<Select
+								key={values.categoryId || 'category-empty'}
+								open={categorySelectOpen}
+								onOpenChange={setCategorySelectOpen}
 								value={values.categoryId || undefined}
 								onValueChange={handleCategoryChange}
 								disabled={pending}
@@ -317,18 +460,34 @@ function TransactionFormFields({
 											{c.name}
 										</SelectItem>
 									))}
+									<SelectSeparator />
+									<button
+										type="button"
+										className={ADD_ITEM_CLASS}
+										disabled={mainAtCap}
+										data-testid="tx-add-category"
+										onPointerDown={(event) => event.preventDefault()}
+										onClick={() => {
+											if (!mainAtCap) openCategoryCreate('main');
+										}}
+									>
+										{mainAtCap ? 'Add category (max reached)' : 'Add category…'}
+									</button>
 								</SelectContent>
 							</Select>
 						</div>
 						<div className="grid gap-2">
 							<Label htmlFor="tx-subcategory">Subcategory</Label>
 							<Select
+								key={values.subcategoryId || 'subcategory-empty'}
+								open={subcategorySelectOpen}
+								onOpenChange={setSubcategorySelectOpen}
 								value={values.subcategoryId || '__none__'}
-								onValueChange={(v) => setField('subcategoryId', v === '__none__' ? '' : v)}
-								disabled={pending || !values.categoryId || subs.length === 0}
+								onValueChange={handleSubcategoryChange}
+								disabled={pending || !values.categoryId}
 							>
 								<SelectTrigger id="tx-subcategory" className="w-full">
-									<SelectValue placeholder={subs.length ? 'Optional' : 'No subcategories'} />
+									<SelectValue placeholder="Optional" />
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="__none__">None</SelectItem>
@@ -337,6 +496,21 @@ function TransactionFormFields({
 											{c.name}
 										</SelectItem>
 									))}
+									<SelectSeparator />
+									<button
+										type="button"
+										className={ADD_ITEM_CLASS}
+										disabled={subAtCap}
+										data-testid="tx-add-subcategory"
+										onPointerDown={(event) => event.preventDefault()}
+										onClick={() => {
+											if (values.categoryId && !subAtCap) openCategoryCreate('sub');
+										}}
+									>
+										{subAtCap
+											? 'Add subcategory (max reached)'
+											: 'Add subcategory…'}
+									</button>
 								</SelectContent>
 							</Select>
 						</div>
@@ -416,6 +590,27 @@ function TransactionFormFields({
 					)}
 				</Button>
 			</DialogFooter>
-		</form>
+			</form>
+
+			<CategoryFormDialog
+				open={categoryCreateMode != null}
+				onOpenChange={(open) => {
+					if (!open) setCategoryCreateMode(null);
+				}}
+				title={
+					categoryCreateMode === 'sub'
+						? `Add under ${selectedMain?.name ?? 'category'}`
+						: `Add ${values.type} category`
+				}
+				description={
+					categoryCreateMode === 'sub'
+						? `Nested under ${selectedMain?.name ?? 'this category'}.`
+						: 'Give it a name.'
+				}
+				confirmLabel={categoryCreateMode === 'sub' ? 'Add subcategory' : 'Add category'}
+				pending={createCategoryMutation.isPending}
+				onSubmit={handleCategoryCreate}
+			/>
+		</>
 	);
 }

@@ -81,6 +81,7 @@ function CategoryFormFields({
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		e.stopPropagation();
 		const fieldErrors = categoryFieldErrors({ name });
 		if (fieldErrors.name) {
 			setError(fieldErrors.name);
