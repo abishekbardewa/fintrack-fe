@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Menu } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 import { useAppSelector } from '@/app/hooks';
-import { Button } from '@/components/ui/button';
 import {
 	Sheet,
+	SheetClose,
 	SheetContent,
 	SheetDescription,
 	SheetHeader,
@@ -115,12 +115,12 @@ export function MobileBottomNav() {
 							<span>More</span>
 						</button>
 					</SheetTrigger>
-					<SheetContent side="bottom" className="rounded-t-xl pb-8">
-						<SheetHeader>
+					<SheetContent side="bottom" showCloseButton={false} className="rounded-t-xl pb-8">
+						<SheetHeader className="sr-only">
 							<SheetTitle>More</SheetTitle>
 							<SheetDescription>Categories, trends, and other destinations.</SheetDescription>
 						</SheetHeader>
-						<div className="grid gap-1 px-4">
+						<div className="grid gap-1 px-4 pt-2">
 							{SECONDARY_NAV_ITEMS.map((item) => {
 								const Icon = item.icon;
 								return (
@@ -140,16 +140,15 @@ export function MobileBottomNav() {
 									</NavLink>
 								);
 							})}
-						</div>
-						<div className="mt-4 flex justify-center px-4">
-							<Button
-								type="button"
-								variant="outline"
-								className="w-full"
-								onClick={() => setMoreOpen(false)}
-							>
-								Close
-							</Button>
+							<SheetClose asChild>
+								<button
+									type="button"
+									className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors hover:bg-muted"
+								>
+									<X className="size-4" aria-hidden="true" />
+									Close
+								</button>
+							</SheetClose>
 						</div>
 					</SheetContent>
 				</Sheet>

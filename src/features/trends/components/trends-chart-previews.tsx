@@ -13,6 +13,7 @@ import {
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 
+import { Skeleton } from '@/components/ui/skeleton';
 import { useDashboardChartColors } from '@/features/dashboard/hooks/use-dashboard-chart-colors';
 import type { TrendsCategorySeries, TrendsMonthPoint } from '@/features/trends/types';
 import { cn } from '@/lib/utils';
@@ -72,6 +73,7 @@ interface TrendsChartPreviewsProps {
 	onToggleCategory: (id: string) => void;
 	currency: string;
 	rangeLabel: string;
+	categoryChartPending?: boolean;
 }
 
 export function TrendsChartPreviews({
@@ -82,6 +84,7 @@ export function TrendsChartPreviews({
 	onToggleCategory,
 	currency,
 	rangeLabel,
+	categoryChartPending = false,
 }: TrendsChartPreviewsProps) {
 	const colors = useDashboardChartColors();
 	const labels = series.map((p) => p.label);
@@ -238,7 +241,9 @@ export function TrendsChartPreviews({
 					hint="Pick up to 2 categories"
 					headerExtra={categoryPicker}
 				>
-					{selectedCats.length === 0 ? (
+					{categoryChartPending ? (
+						<Skeleton className="h-full min-h-56 w-full rounded-xl" data-testid="trends-category-loading" />
+					) : selectedCats.length === 0 ? (
 						<p className="flex h-full items-center justify-center text-sm text-muted-foreground">
 							Pick at least one category.
 						</p>

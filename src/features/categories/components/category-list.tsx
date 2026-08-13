@@ -119,16 +119,15 @@ function CategoryCard({
 			className="relative flex min-h-44 flex-col overflow-hidden rounded-3xl bg-muted shadow-sm"
 			data-testid={`category-main-${main.id}`}
 		>
-			<div className="flex items-start gap-3 px-5 pt-5 pb-3">
-				<div
+			<div className="flex items-center gap-3 px-5 pt-5 pb-3">
+				<KindIcon
 					className={cn(
-						'flex size-6 shrink-0 items-center justify-center rounded-full',
-						isIncome ? 'bg-income/15 text-income' : 'bg-expense/15 text-expense',
+						'size-4 shrink-0',
+						isIncome ? 'text-income' : 'text-expense',
 					)}
-				>
-					<KindIcon className="size-3" aria-hidden="true" />
-				</div>
-				<div className="min-w-0 flex-1 pt-0.5">
+					aria-hidden="true"
+				/>
+				<div className="min-w-0 flex-1">
 					<h3 className="truncate text-sm font-semibold text-foreground">{main.name}</h3>
 				</div>
 				<div className="flex shrink-0 items-center gap-1">

@@ -214,29 +214,6 @@ export function TransactionImportDialog({
 
 				<div className="flex min-h-0 flex-1 flex-col gap-4 py-2">
 					<div className="shrink-0 space-y-4">
-						<div className="flex flex-wrap gap-2">
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={downloadImportTemplateCsv}
-								data-testid="transaction-import-template-csv"
-							>
-								<FileText className="size-4" />
-								CSV template
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={downloadImportTemplateXlsx}
-								data-testid="transaction-import-template-xlsx"
-							>
-								<FileSpreadsheet className="size-4" />
-								Excel template
-							</Button>
-						</div>
-
 						<div
 							role="button"
 							tabIndex={0}
@@ -532,25 +509,49 @@ export function TransactionImportDialog({
 					) : null}
 				</div>
 
-				<DialogFooter className="mt-4 shrink-0 gap-2 border-t border-border pt-4 sm:gap-0">
-					<Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-						Cancel
-					</Button>
-					<Button
-						type="button"
-						disabled={!canImport}
-						onClick={() => void handleImport()}
-						data-testid="transaction-import-submit"
-					>
-						{importMutation.isPending ? (
-							<>
-								<Loader2 className="size-4 animate-spin" />
-								Importing…
-							</>
-						) : (
-							`Import${rows.length > 0 ? ` ${rows.length}` : ''}`
-						)}
-					</Button>
+				<DialogFooter className="mt-4 shrink-0 flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+					<div className="flex flex-wrap gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							onClick={downloadImportTemplateCsv}
+							data-testid="transaction-import-template-csv"
+						>
+							<FileText className="size-4" />
+							CSV template
+						</Button>
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							onClick={downloadImportTemplateXlsx}
+							data-testid="transaction-import-template-xlsx"
+						>
+							<FileSpreadsheet className="size-4" />
+							Excel template
+						</Button>
+					</div>
+					<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+						<Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+							Cancel
+						</Button>
+						<Button
+							type="button"
+							disabled={!canImport}
+							onClick={() => void handleImport()}
+							data-testid="transaction-import-submit"
+						>
+							{importMutation.isPending ? (
+								<>
+									<Loader2 className="size-4 animate-spin" />
+									Importing…
+								</>
+							) : (
+								`Import${rows.length > 0 ? ` ${rows.length}` : ''}`
+							)}
+						</Button>
+					</div>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
