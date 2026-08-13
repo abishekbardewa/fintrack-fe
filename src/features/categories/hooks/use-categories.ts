@@ -7,7 +7,9 @@ import {
 	updateCategory,
 } from '@/features/categories/category.service';
 import type {
+	CategoriesListData,
 	CategoryKind,
+	CategoryMutationData,
 	CreateCategoryRequest,
 	UpdateCategoryRequest,
 } from '@/features/categories/types';
@@ -31,12 +33,28 @@ function invalidateCategoryConsumers(queryClient: ReturnType<typeof useQueryClie
 	void queryClient.invalidateQueries({ queryKey: trendsKeys.all });
 }
 
+function appendCategoryToList(
+	old: CategoriesListData | undefined,
+	category: CategoryMutationData['category'],
+): CategoriesListData {
+	if (!old) return { categories: [category] };
+	if (old.categories.some((item) => item.id === category.id)) return old;
+	return { categories: [...old.categories, category] };
+}
+
 export function useCreateCategoryMutation() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: (payload: CreateCategoryRequest) => createCategory(payload),
-		onSuccess: (_data, variables) => {
-			void queryClient.invalidateQueries({ queryKey: categoryKeys.list(variables.kind) });
+		onSuccess: (data, variables) => {
+			queryClient.setQueryData(
+				categoryKeys.list(variables.kind),
+				(old: CategoriesListData | undefined) => appendCategoryToList(old, data.category),
+			);
+			queryClient.setQueryData(
+				categoryKeys.list(),
+				(old: CategoriesListData | undefined) => appendCategoryToList(old, data.category),
+			);
 			invalidateCategoryConsumers(queryClient);
 		},
 	});
