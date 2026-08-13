@@ -10,6 +10,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { formatDate } from '@/features/admin-exchange-rates/utils';
 
 interface ExchangeRateDeleteDialogProps {
 	open: boolean;
@@ -32,7 +33,7 @@ export function ExchangeRateDeleteDialog({
 				<AlertDialogHeader>
 					<AlertDialogTitle>Delete rate?</AlertDialogTitle>
 					<AlertDialogDescription>
-						Delete the exchange rate for {date}? This cannot be undone.
+						Remove {formatDate(date)}. Can’t undo.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

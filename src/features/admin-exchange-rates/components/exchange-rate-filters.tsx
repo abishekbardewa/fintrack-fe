@@ -1,6 +1,6 @@
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { X } from 'lucide-react';
+
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import {
 	Select,
 	SelectContent,
@@ -8,13 +8,19 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import type { ExchangeRateStatus } from '@/features/admin-exchange-rates/types';
+import type {
+	ExchangeRateProcess,
+	ExchangeRateStatus,
+} from '@/features/admin-exchange-rates/types';
+import { processLabel } from '@/features/admin-exchange-rates/utils';
+import { formatDateInput } from '@/features/transactions/utils';
 import { cn } from '@/lib/utils';
 
 export interface ExchangeRateFilterDraft {
 	from: string;
 	to: string;
 	status: ExchangeRateStatus | 'all';
+	process: ExchangeRateProcess | 'all';
 }
 
 interface ExchangeRateFiltersProps {
@@ -23,79 +29,113 @@ interface ExchangeRateFiltersProps {
 	className?: string;
 }
 
+const filterControlClass =
+	'h-10 min-h-10 w-auto rounded-lg border border-input/20 bg-muted py-0 text-sm font-medium shadow-xs';
+const filterActiveClass =
+	'border-primary/30 bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground dark:border-primary/30 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary [&_svg]:text-primary-foreground';
+
 const STATUS_OPTIONS: { value: ExchangeRateFilterDraft['status']; label: string }[] = [
-	{ value: 'all', label: 'All' },
+	{ value: 'all', label: 'All statuses' },
 	{ value: 'ok', label: 'OK' },
 	{ value: 'error', label: 'Error' },
-	{ value: 'manual', label: 'Manual' },
+];
+
+const PROCESS_OPTIONS: { value: ExchangeRateFilterDraft['process']; label: string }[] = [
+	{ value: 'all', label: 'All processes' },
+	{ value: 'system_cron', label: processLabel('system_cron') },
+	{ value: 'external_cron_org', label: processLabel('external_cron_org') },
+	{ value: 'admin_sync', label: processLabel('admin_sync') },
+	{ value: 'admin_retry', label: processLabel('admin_retry') },
+	{ value: 'admin_manual', label: processLabel('admin_manual') },
 ];
 
 export function ExchangeRateFilters({ value, onChange, className }: ExchangeRateFiltersProps) {
-	const hasFilters = Boolean(value.from || value.to || value.status !== 'all');
+	const dateActive = Boolean(value.from || value.to);
+	const statusActive = value.status !== 'all';
+	const processActive = value.process !== 'all';
+
+	const dateChipLabel =
+		value.from || value.to
+			? `${value.from ? formatDateInput(value.from) : '…'} – ${
+					value.to ? formatDateInput(value.to) : '…'
+				}`
+			: null;
 
 	return (
 		<div
-			className={cn(
-				'flex flex-col gap-3 rounded-xl border border-border bg-card p-3 shadow-xs sm:flex-row sm:flex-wrap sm:items-end',
-				className,
-			)}
+			className={cn('flex flex-wrap items-center gap-2', className)}
+			role="search"
+			aria-label="Exchange rate filters"
 			data-testid="exchange-rate-filters"
 		>
-			<div className="grid gap-1.5">
-				<Label htmlFor="exchange-rate-from">From</Label>
-				<Input
-					id="exchange-rate-from"
-					type="date"
-					value={value.from}
-					onChange={(e) => onChange({ ...value, from: e.target.value })}
-					className="w-full sm:w-40"
-					data-testid="exchange-rate-from"
-				/>
-			</div>
+			<DateRangePicker
+				from={value.from}
+				to={value.to}
+				onChange={({ from, to }) => onChange({ ...value, from, to })}
+				placeholder="Date range"
+				className={cn('w-auto min-w-40', filterControlClass, dateActive && filterActiveClass)}
+				aria-label="Date range"
+			/>
 
-			<div className="grid gap-1.5">
-				<Label htmlFor="exchange-rate-to">To</Label>
-				<Input
-					id="exchange-rate-to"
-					type="date"
-					value={value.to}
-					onChange={(e) => onChange({ ...value, to: e.target.value })}
-					className="w-full sm:w-40"
-					data-testid="exchange-rate-to"
-				/>
-			</div>
-
-			<div className="grid gap-1.5">
-				<Label htmlFor="exchange-rate-status">Status</Label>
-				<Select
-					value={value.status}
-					onValueChange={(status) =>
-						onChange({ ...value, status: status as ExchangeRateFilterDraft['status'] })
-					}
+			<Select
+				value={value.status}
+				onValueChange={(status) =>
+					onChange({ ...value, status: status as ExchangeRateFilterDraft['status'] })
+				}
+			>
+				<SelectTrigger
+					className={cn('min-w-32', filterControlClass, statusActive && filterActiveClass)}
+					aria-label="Status"
+					data-testid="exchange-rate-status"
 				>
-					<SelectTrigger id="exchange-rate-status" className="w-full sm:w-36" data-testid="exchange-rate-status">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						{STATUS_OPTIONS.map((option) => (
-							<SelectItem key={option.value} value={option.value}>
-								{option.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-			</div>
+					<SelectValue placeholder="Status" />
+				</SelectTrigger>
+				<SelectContent>
+					{STATUS_OPTIONS.map((option) => (
+						<SelectItem key={option.value} value={option.value}>
+							{option.label}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
 
-			{hasFilters ? (
-				<Button
-					type="button"
-					variant="ghost"
-					className="sm:mb-0.5"
-					onClick={() => onChange({ from: '', to: '', status: 'all' })}
-					data-testid="exchange-rate-filters-clear"
+			<Select
+				value={value.process}
+				onValueChange={(process) =>
+					onChange({ ...value, process: process as ExchangeRateFilterDraft['process'] })
+				}
+			>
+				<SelectTrigger
+					className={cn('min-w-40', filterControlClass, processActive && filterActiveClass)}
+					aria-label="Process"
+					data-testid="exchange-rate-process"
 				>
-					Clear
-				</Button>
+					<SelectValue placeholder="Process" />
+				</SelectTrigger>
+				<SelectContent>
+					{PROCESS_OPTIONS.map((option) => (
+						<SelectItem key={option.value} value={option.value}>
+							{option.label}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+
+			{dateChipLabel ? (
+				<span
+					className="inline-flex h-8 items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 text-sm text-primary"
+					data-testid="exchange-rate-applied-date"
+				>
+					<span className="max-w-56 truncate">{dateChipLabel}</span>
+					<button
+						type="button"
+						onClick={() => onChange({ ...value, from: '', to: '' })}
+						className="inline-flex size-5 items-center justify-center rounded-full text-primary/80 transition-colors hover:bg-primary/15 hover:text-primary"
+						aria-label="Clear date range"
+					>
+						<X className="size-3.5" />
+					</button>
+				</span>
 			) : null}
 		</div>
 	);

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -88,6 +89,7 @@ export function BudgetMonthFilter({ year, month, onChange }: BudgetMonthFilterPr
 				<DialogContent className="sm:max-w-md" data-testid="budget-filter-dialog">
 					<DialogHeader>
 						<DialogTitle>Filters</DialogTitle>
+						<DialogDescription>Narrow what you see.</DialogDescription>
 					</DialogHeader>
 
 					<div className="grid gap-5 py-1">

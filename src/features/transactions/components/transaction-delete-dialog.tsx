@@ -32,7 +32,7 @@ export function TransactionDeleteDialog({
 				<AlertDialogHeader>
 					<AlertDialogTitle>Delete transaction?</AlertDialogTitle>
 					<AlertDialogDescription>
-						Delete &ldquo;{label}&rdquo;? This cannot be undone.
+						Remove &ldquo;{label}&rdquo;. Can’t undo.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

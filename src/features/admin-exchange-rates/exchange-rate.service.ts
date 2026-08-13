@@ -2,12 +2,10 @@ import { apiPrivate } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/errors';
 import type { ApiResponse } from '@/lib/api/types';
 import type {
-	AdminListEnvelope,
 	CreateExchangeRateRequest,
 	ExchangeRate,
 	ListExchangeRatesParams,
-	ListSyncLogsParams,
-	SyncLog,
+	ListExchangeRatesResponse,
 	UpdateExchangeRateRequest,
 } from '@/features/admin-exchange-rates/types';
 
@@ -25,11 +23,12 @@ function unwrapData<T>(body: ApiResponse<T>, fallbackMessage: string): T {
 }
 
 export async function listExchangeRates(params: ListExchangeRatesParams = {}) {
-	const { data } = await apiPrivate.get<ApiResponse<AdminListEnvelope<ExchangeRate>>>(BASE, {
+	const { data } = await apiPrivate.get<ApiResponse<ListExchangeRatesResponse>>(BASE, {
 		params: {
 			...(params.from ? { from: params.from } : {}),
 			...(params.to ? { to: params.to } : {}),
 			...(params.status ? { status: params.status } : {}),
+			...(params.process ? { process: params.process } : {}),
 			...(params.page != null ? { page: params.page } : {}),
 			...(params.limit != null ? { limit: params.limit } : {}),
 		},
@@ -71,15 +70,4 @@ export async function retryExchangeRate(date: string) {
 export async function syncTodayExchangeRate() {
 	const { data } = await apiPrivate.post<ApiResponse<ExchangeRate>>(`${BASE}/sync-today`);
 	return unwrapData(data, 'Failed to sync today’s rate.');
-}
-
-export async function listSyncLogs(params: ListSyncLogsParams = {}) {
-	const { data } = await apiPrivate.get<ApiResponse<AdminListEnvelope<SyncLog>>>(`${BASE}/logs`, {
-		params: {
-			...(params.page != null ? { page: params.page } : {}),
-			...(params.limit != null ? { limit: params.limit } : {}),
-			...(params.success != null ? { success: String(params.success) } : {}),
-		},
-	});
-	return unwrapData(data, 'Failed to load sync logs.');
 }

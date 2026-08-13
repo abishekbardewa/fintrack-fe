@@ -7,6 +7,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -207,7 +208,8 @@ export function TransactionImportDialog({
 				data-testid="transaction-import-dialog"
 			>
 				<DialogHeader className="shrink-0">
-					<DialogTitle>Import transactions</DialogTitle>
+					<DialogTitle>Import</DialogTitle>
+					<DialogDescription>Bring transactions in from a file.</DialogDescription>
 				</DialogHeader>
 
 				<div className="flex min-h-0 flex-1 flex-col gap-4 py-2">

@@ -113,7 +113,7 @@ function ContributeFormFields({
 		<form onSubmit={handleSubmit} noValidate>
 			<DialogHeader>
 				<DialogTitle>Add contribution</DialogTitle>
-				<DialogDescription>Add to &ldquo;{goalName}&rdquo;.</DialogDescription>
+				<DialogDescription>Toward &ldquo;{goalName}&rdquo;.</DialogDescription>
 			</DialogHeader>
 
 			<div className="grid gap-4 py-4">

@@ -7,6 +7,7 @@ import { DateRangePicker } from '@/components/ui/date-range-picker';
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -388,6 +389,7 @@ export function TransactionFilters({ value, onChange }: TransactionFiltersProps)
 				<DialogContent className="sm:max-w-md" data-testid="transaction-filter-more-dialog">
 					<DialogHeader>
 						<DialogTitle>Filters</DialogTitle>
+						<DialogDescription>Narrow what you see.</DialogDescription>
 					</DialogHeader>
 
 					<div className="grid gap-5 py-1">

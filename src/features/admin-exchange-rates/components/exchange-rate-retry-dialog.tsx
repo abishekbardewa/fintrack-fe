@@ -10,6 +10,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { formatDate } from '@/features/admin-exchange-rates/utils';
 
 interface ExchangeRateRetryDialogProps {
 	open: boolean;
@@ -32,7 +33,7 @@ export function ExchangeRateRetryDialog({
 				<AlertDialogHeader>
 					<AlertDialogTitle>Retry sync?</AlertDialogTitle>
 					<AlertDialogDescription>
-						Fetch the latest rate for {date} from Frankfurter?
+						Pull {formatDate(date)} again from Frankfurter.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

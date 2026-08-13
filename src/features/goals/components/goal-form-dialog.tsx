@@ -133,9 +133,9 @@ function GoalFormFields({
 	return (
 		<form onSubmit={handleSubmit} noValidate>
 			<DialogHeader>
-				<DialogTitle>{isEdit ? 'Edit goal' : 'New savings goal'}</DialogTitle>
+				<DialogTitle>{isEdit ? 'Edit goal' : 'New goal'}</DialogTitle>
 				<DialogDescription>
-					{isEdit ? 'Update this goal.' : 'Set a target amount and optional date.'}
+					{isEdit ? 'Update this goal.' : 'Name it and set a target.'}
 				</DialogDescription>
 			</DialogHeader>
 

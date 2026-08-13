@@ -201,9 +201,9 @@ function TransactionFormFields({
 	return (
 		<form onSubmit={handleSubmit} noValidate className="grid gap-0">
 			<DialogHeader className="gap-1 border-b border-border px-6 py-5 pr-12 text-left">
-				<DialogTitle>{isEdit ? 'Edit Transaction' : 'Add Transaction'}</DialogTitle>
+				<DialogTitle>{isEdit ? 'Edit transaction' : 'Add transaction'}</DialogTitle>
 				<DialogDescription>
-					{isEdit ? 'Update this ledger entry.' : 'Record a new manual entry.'}
+					{isEdit ? 'Fix this entry.' : 'Log what came in or went out.'}
 				</DialogDescription>
 			</DialogHeader>
 

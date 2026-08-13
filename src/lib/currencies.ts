@@ -12,7 +12,6 @@ export const SUPPORTED_CURRENCIES: CurrencyOption[] = [
 	{ code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
 	{ code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
 	{ code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
-	{ code: 'AED', name: 'UAE Dirham', symbol: 'د.إ' },
 ];
 
 export const DEFAULT_CURRENCY = 'USD';

@@ -1,6 +1,11 @@
-export type ExchangeRateSource = 'frankfurter' | 'manual' | 'admin_retry';
-export type ExchangeRateStatus = 'ok' | 'error' | 'manual';
-export type SyncLogType = 'daily_cron' | 'retry_date' | 'manual';
+export type ExchangeRateSource = 'frankfurter';
+export type ExchangeRateStatus = 'ok' | 'error';
+export type ExchangeRateProcess =
+	| 'system_cron'
+	| 'external_cron_org'
+	| 'admin_sync'
+	| 'admin_retry'
+	| 'admin_manual';
 
 export interface ExchangeRateLastError {
 	message: string;
@@ -15,56 +20,41 @@ export interface ExchangeRate {
 	fetchedAt: string;
 	source: ExchangeRateSource;
 	status: ExchangeRateStatus;
+	process: ExchangeRateProcess;
+	triggeredBy: string;
 	attemptCount: number;
 	lastError: ExchangeRateLastError | null;
 	notes: string | null;
 	updatedBy: string | null;
-	createdAt: string;
-	updatedAt: string;
+	createdAt?: string;
+	updatedAt?: string;
 }
 
-export interface SyncLog {
-	id: string;
-	type: SyncLogType;
-	date: string;
-	success: boolean;
-	error: string | null;
-	triggeredBy: string;
-	startedAt: string;
-	finishedAt: string;
-	createdAt: string;
-}
-
-export interface AdminListEnvelope<T> {
-	items: T[];
+export interface ListExchangeRatesResponse {
+	items: ExchangeRate[];
 	page: number;
 	limit: number;
 	total: number;
+	base: string;
+	source: string;
 }
 
 export interface ListExchangeRatesParams {
 	from?: string;
 	to?: string;
 	status?: ExchangeRateStatus;
+	process?: ExchangeRateProcess;
 	page?: number;
 	limit?: number;
-}
-
-export interface ListSyncLogsParams {
-	page?: number;
-	limit?: number;
-	success?: boolean;
 }
 
 export interface CreateExchangeRateRequest {
 	date: string;
-	base?: string;
-	rates: Record<string, number>;
+	rates?: Record<string, number>;
 	notes?: string;
 }
 
 export interface UpdateExchangeRateRequest {
 	rates?: Record<string, number>;
 	notes?: string | null;
-	status?: ExchangeRateStatus;
 }

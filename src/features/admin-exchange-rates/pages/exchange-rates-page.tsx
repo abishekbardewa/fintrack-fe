@@ -15,7 +15,6 @@ import {
 import { ExchangeRateFormDialog } from '@/features/admin-exchange-rates/components/exchange-rate-form-dialog';
 import { ExchangeRateList } from '@/features/admin-exchange-rates/components/exchange-rate-list';
 import { ExchangeRateRetryDialog } from '@/features/admin-exchange-rates/components/exchange-rate-retry-dialog';
-import { SyncLogsPanel } from '@/features/admin-exchange-rates/components/sync-logs-panel';
 import {
 	useCreateExchangeRateMutation,
 	useDeleteExchangeRateMutation,
@@ -30,23 +29,20 @@ import type {
 	UpdateExchangeRateRequest,
 } from '@/features/admin-exchange-rates/types';
 import { useCurrenciesQuery } from '@/features/currencies/hooks/use-currencies';
-import { getErrorMessage } from '@/lib/api/errors';
+import { getErrorMessage, toApiError } from '@/lib/api/errors';
+import { DEFAULT_CURRENCY } from '@/lib/currencies';
 import { cn } from '@/lib/utils';
 
 const PAGE_LIMIT = 20;
 
-type PanelTab = 'rates' | 'logs';
-
 export function ExchangeRatesPage() {
-	const [tab, setTab] = useState<PanelTab>('rates');
 	const [filters, setFilters] = useState<ExchangeRateFilterDraft>({
 		from: '',
 		to: '',
 		status: 'all',
+		process: 'all',
 	});
 	const [page, setPage] = useState(1);
-	const [logsPage, setLogsPage] = useState(1);
-	const [logsFailedOnly, setLogsFailedOnly] = useState(false);
 
 	const [formOpen, setFormOpen] = useState(false);
 	const [editing, setEditing] = useState<ExchangeRate | null>(null);
@@ -60,6 +56,7 @@ export function ExchangeRatesPage() {
 			...(filters.from ? { from: filters.from } : {}),
 			...(filters.to ? { to: filters.to } : {}),
 			...(filters.status !== 'all' ? { status: filters.status } : {}),
+			...(filters.process !== 'all' ? { process: filters.process } : {}),
 		}),
 		[filters, page],
 	);
@@ -76,6 +73,12 @@ export function ExchangeRatesPage() {
 	const total = data?.total ?? 0;
 	const totalPages = Math.max(1, Math.ceil(total / PAGE_LIMIT));
 	const currencies = currenciesData?.currencies ?? [];
+	const listBase = data?.base ?? DEFAULT_CURRENCY;
+	const listSource = data?.source ?? 'frankfurter';
+	const filtersActive =
+		Boolean(filters.from || filters.to) ||
+		filters.status !== 'all' ||
+		filters.process !== 'all';
 
 	const formPending = createMutation.isPending || updateMutation.isPending;
 
@@ -102,9 +105,20 @@ export function ExchangeRatesPage() {
 	const handleCreate = async (payload: CreateExchangeRateRequest) => {
 		try {
 			await createMutation.mutateAsync(payload);
-			toast.success('Exchange rate created');
+			toast.success(
+				payload.rates ? 'Exchange rate created' : 'Exchange rate fetched',
+			);
 			handleFormOpenChange(false);
 		} catch (error) {
+			const apiError = toApiError(error);
+			if (apiError.statusCode === 409) {
+				toast.error(apiError.message || 'A rate already exists for this date.');
+				return;
+			}
+			if (apiError.statusCode === 502) {
+				toast.error(apiError.message || 'Frankfurter fetch failed.');
+				return;
+			}
 			toast.error(getErrorMessage(error, 'Could not create exchange rate.'));
 		}
 	};
@@ -150,7 +164,7 @@ export function ExchangeRatesPage() {
 		}
 	};
 
-	const showChromeSkeleton = tab === 'rates' && isLoading && !data;
+	const showChromeSkeleton = isLoading && !data;
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -187,115 +201,86 @@ export function ExchangeRatesPage() {
 			</header>
 
 			{showChromeSkeleton ? (
-				<div className="flex flex-wrap gap-2" aria-hidden="true">
-					<Skeleton className="h-8 w-20 rounded-full" />
-					<Skeleton className="h-8 w-24 rounded-full" />
+				<div className="flex flex-wrap items-center justify-between gap-3" aria-hidden="true">
+					<div className="flex flex-wrap gap-2">
+						<Skeleton className="h-10 w-40 rounded-lg" />
+						<Skeleton className="h-10 w-32 rounded-lg" />
+						<Skeleton className="h-10 w-40 rounded-lg" />
+					</div>
+					<Skeleton className="h-4 w-48" />
 				</div>
 			) : (
-				<div className="flex flex-wrap gap-2" role="tablist" aria-label="Admin panels">
-					{(
-						[
-							{ value: 'rates', label: 'Rates' },
-							{ value: 'logs', label: 'Sync logs' },
-						] as const
-					).map((item) => {
-						const active = tab === item.value;
-						return (
-							<button
-								key={item.value}
-								type="button"
-								role="tab"
-								aria-selected={active}
-								onClick={() => setTab(item.value)}
-								className={cn(
-									'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
-									active
-										? 'bg-primary text-primary-foreground shadow-sm'
-										: 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
-								)}
-								data-testid={`exchange-rate-tab-${item.value}`}
-							>
-								{item.label}
-							</button>
-						);
-					})}
+				<div className="flex flex-wrap items-center justify-between gap-3">
+					<ExchangeRateFilters value={filters} onChange={handleFiltersChange} />
+					<p className="text-sm text-muted-foreground">
+						Base: <span className="font-medium text-foreground">{listBase}</span>
+						<span className="mx-2" aria-hidden="true">
+							·
+						</span>
+						Source: <span className="font-medium text-foreground">{listSource}</span>
+					</p>
 				</div>
 			)}
 
-			{tab === 'rates' ? (
-				<>
-					{showChromeSkeleton ? (
-						<div className="flex flex-wrap gap-2" aria-hidden="true">
-							<Skeleton className="h-9 w-28 rounded-full" />
-							<Skeleton className="h-9 w-28 rounded-full" />
-							<Skeleton className="h-9 w-28 rounded-full" />
-						</div>
-					) : (
-						<ExchangeRateFilters value={filters} onChange={handleFiltersChange} />
-					)}
+			{isLoading ? (
+				<div className="space-y-2">
+					<Skeleton className="h-14 w-full rounded-xl" />
+					<Skeleton className="h-14 w-full rounded-xl" />
+					<Skeleton className="h-14 w-full rounded-xl" />
+				</div>
+			) : null}
 
-					{isLoading ? (
-						<div className="space-y-2">
-							<Skeleton className="h-14 w-full rounded-xl" />
-							<Skeleton className="h-14 w-full rounded-xl" />
-							<Skeleton className="h-14 w-full rounded-xl" />
-						</div>
-					) : null}
-
-					{isError ? (
-						<ErrorState
-							title="Could not load rates"
-							description="Check your connection and try again."
-							onRetry={() => void refetch()}
-						/>
-					) : null}
-
-					{!isLoading && !isError && items.length === 0 ? (
-						<EmptyState
-							icon={ArrowLeftRight}
-							title="No rates yet"
-							description="Sync today or add a manual rate."
-							action={
-								<Button type="button" onClick={openCreate}>
-									<Plus className="size-4" />
-									Add rate
-								</Button>
-							}
-						/>
-					) : null}
-
-					{!isLoading && !isError && items.length > 0 ? (
-						<>
-							<ExchangeRateList
-								items={items}
-								retryingDate={retryMutation.isPending ? retrying?.date : null}
-								onEdit={openEdit}
-								onRetry={setRetrying}
-								onDelete={setDeleting}
-							/>
-							<div className="flex flex-wrap items-center justify-between gap-3">
-								<p className="text-xs text-muted-foreground">
-									{total} rate{total === 1 ? '' : 's'}
-									{isFetching ? ' · Updating…' : ''}
-								</p>
-								<NumberedPagination
-									page={page}
-									totalPages={totalPages}
-									onPageChange={setPage}
-									disabled={isFetching}
-								/>
-							</div>
-						</>
-					) : null}
-				</>
-			) : (
-				<SyncLogsPanel
-					page={logsPage}
-					onPageChange={setLogsPage}
-					failedOnly={logsFailedOnly}
-					onFailedOnlyChange={setLogsFailedOnly}
+			{isError ? (
+				<ErrorState
+					title="Could not load rates"
+					description="Check your connection and try again."
+					onRetry={() => void refetch()}
 				/>
-			)}
+			) : null}
+
+			{!isLoading && !isError && items.length === 0 ? (
+				<EmptyState
+					icon={ArrowLeftRight}
+					title="No rates yet"
+					description={
+						filtersActive
+							? 'Try adjusting or clearing your filters.'
+							: 'Sync today or add a rate.'
+					}
+					action={
+						filtersActive ? undefined : (
+							<Button type="button" onClick={openCreate}>
+								<Plus className="size-4" />
+								Add rate
+							</Button>
+						)
+					}
+				/>
+			) : null}
+
+			{!isLoading && !isError && items.length > 0 ? (
+				<>
+					<ExchangeRateList
+						items={items}
+						retryingDate={retryMutation.isPending ? retrying?.date : null}
+						onEdit={openEdit}
+						onRetry={setRetrying}
+						onDelete={setDeleting}
+					/>
+					<div className="flex flex-wrap items-center justify-between gap-3">
+						<p className="text-xs text-muted-foreground">
+							{total} rate{total === 1 ? '' : 's'}
+							{isFetching ? ' · Updating…' : ''}
+						</p>
+						<NumberedPagination
+							page={page}
+							totalPages={totalPages}
+							onPageChange={setPage}
+							disabled={isFetching}
+						/>
+					</div>
+				</>
+			) : null}
 
 			<ExchangeRateFormDialog
 				open={formOpen}
