@@ -30,9 +30,9 @@ export function GoalDeleteDialog({
 		<AlertDialog open={open} onOpenChange={onOpenChange}>
 			<AlertDialogContent>
 				<AlertDialogHeader>
-					<AlertDialogTitle>Delete savings goal?</AlertDialogTitle>
+					<AlertDialogTitle>Delete goal?</AlertDialogTitle>
 					<AlertDialogDescription>
-						Delete &ldquo;{goalName}&rdquo; and all of its contributions? This cannot be undone.
+						Remove &ldquo;{goalName}&rdquo; and its history. Can’t undo.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

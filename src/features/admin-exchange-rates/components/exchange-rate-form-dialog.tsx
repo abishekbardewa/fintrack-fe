@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
 	Dialog,
 	DialogContent,
@@ -16,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
 	exchangeRateFormSchema,
 	fieldErrorsFromSchema,
+	parseRateMap,
 } from '@/features/admin-exchange-rates/schemas';
 import type {
 	CreateExchangeRateRequest,
@@ -46,7 +48,7 @@ export function ExchangeRateFormDialog({
 }: ExchangeRateFormDialogProps) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+			<DialogContent className="max-h-[90vh] gap-0 overflow-y-auto p-0 sm:max-w-lg">
 				{open ? (
 					<ExchangeRateFormFields
 						key={item?.id ?? 'create'}
@@ -81,10 +83,13 @@ function ExchangeRateFormFields({
 	onUpdate,
 }: ExchangeRateFormFieldsProps) {
 	const isEdit = item != null;
+	const base = item?.base ?? DEFAULT_CURRENCY;
 	const codes = useMemo(() => {
-		const list = currencies.map((c) => c.code);
-		return list.length > 0 ? list : [DEFAULT_CURRENCY];
-	}, [currencies]);
+		const list = currencies.map((c) => c.code).filter((code) => code !== base);
+		return list.length > 0
+			? list
+			: ['EUR', 'GBP', 'INR', 'CAD', 'AUD', 'JPY'].filter((c) => c !== base);
+	}, [currencies, base]);
 
 	const [date, setDate] = useState(item?.date ?? '');
 	const [notes, setNotes] = useState(item?.notes ?? '');
@@ -92,7 +97,7 @@ function ExchangeRateFormFields({
 		const initial: Record<string, string> = {};
 		for (const code of codes) {
 			const value = item?.rates[code];
-			initial[code] = value != null ? String(value) : code === DEFAULT_CURRENCY ? '1' : '';
+			initial[code] = value != null ? String(value) : '';
 		}
 		return initial;
 	});
@@ -114,17 +119,13 @@ function ExchangeRateFormFields({
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 
-		const parsedRates: Record<string, number> = {};
-		for (const code of codes) {
-			const raw = rates[code]?.trim();
-			if (!raw) continue;
-			parsedRates[code] = Number(raw);
-		}
-
+		const anyFilled = Object.values(rates).some((v) => v.trim() !== '');
 		const values = {
 			date,
 			notes: notes.trim() || undefined,
-			rates: parsedRates,
+			rates,
+			requireAllRates: anyFilled,
+			rateCodes: codes,
 		};
 
 		const fieldErrors = fieldErrorsFromSchema(exchangeRateFormSchema, values);
@@ -133,112 +134,112 @@ function ExchangeRateFormFields({
 			return;
 		}
 
-		const parsed = exchangeRateFormSchema.parse(values);
+		const parsedRates = parseRateMap(rates, codes);
 
 		if (isEdit) {
-			await onUpdate(item.date, {
-				rates: parsed.rates,
-				notes: parsed.notes ?? null,
-				status: 'manual',
-			});
+			const payload: UpdateExchangeRateRequest = {
+				notes: notes.trim() ? notes.trim() : null,
+			};
+			if (parsedRates) payload.rates = parsedRates;
+			await onUpdate(item.date, payload);
 			return;
 		}
 
 		await onCreate({
-			date: parsed.date,
-			base: DEFAULT_CURRENCY,
-			rates: parsed.rates,
-			...(parsed.notes ? { notes: parsed.notes } : {}),
+			date,
+			...(notes.trim() ? { notes: notes.trim() } : {}),
+			...(parsedRates ? { rates: parsedRates } : {}),
 		});
 	};
 
 	return (
-		<form onSubmit={handleSubmit} noValidate className="grid gap-4">
-			<DialogHeader>
+		<form onSubmit={handleSubmit} noValidate className="grid gap-0">
+			<DialogHeader className="gap-1 border-b border-border px-6 py-5 pr-12 text-left">
 				<DialogTitle>{isEdit ? 'Edit rate' : 'Add rate'}</DialogTitle>
 				<DialogDescription>
-					{isEdit ? `Update rates for ${item.date}.` : 'Add a manual rate for a date.'}
+					{isEdit ? 'Adjust this day’s rates.' : 'For one day. Leave rates blank to fetch.'}
 				</DialogDescription>
 			</DialogHeader>
 
-			<div className="grid gap-2">
-				<Label htmlFor="exchange-rate-date">Date</Label>
-				<Input
-					id="exchange-rate-date"
-					type="date"
-					value={date}
-					onChange={(e) => {
-						setDate(e.target.value);
-						if (errors.date) setErrors((prev) => ({ ...prev, date: undefined }));
-					}}
-					disabled={pending || isEdit}
-					aria-invalid={Boolean(errors.date)}
-					data-testid="exchange-rate-date"
-				/>
-				{errors.date ? (
-					<p className="text-[10px] leading-tight text-destructive" role="alert">
-						{errors.date}
-					</p>
-				) : null}
-			</div>
+			<div className="grid gap-5 px-6 py-5">
+				<div className="grid gap-2">
+					<Label htmlFor="exchange-rate-date">Date</Label>
+					<DatePicker
+						id="exchange-rate-date"
+						value={date}
+						onChange={(v) => {
+							setDate(v);
+							if (errors.date) setErrors((prev) => ({ ...prev, date: undefined }));
+						}}
+						disabled={pending || isEdit}
+						invalid={Boolean(errors.date)}
+						aria-label="Exchange rate date"
+					/>
+					{errors.date ? (
+						<p className="text-[10px] leading-tight text-destructive" role="alert">
+							{errors.date}
+						</p>
+					) : null}
+				</div>
 
-			<div className="grid gap-2">
-				<Label>Rates (base {DEFAULT_CURRENCY})</Label>
-				{errors.rates ? (
-					<p className="text-[10px] leading-tight text-destructive" role="alert">
-						{errors.rates}
-					</p>
-				) : null}
-				<div className="grid gap-2 sm:grid-cols-2">
-					{codes.map((code) => (
-						<div key={code} className="grid gap-1.5">
-							<Label htmlFor={`exchange-rate-${code}`}>{code}</Label>
-							<Input
-								id={`exchange-rate-${code}`}
-								type="number"
-								inputMode="decimal"
-								step="any"
-								min="0"
-								value={rates[code] ?? ''}
-								onChange={(e) => handleRateChange(code, e.target.value)}
-								disabled={pending}
-								aria-invalid={Boolean(errors[`rates.${code}`])}
-								data-testid={`exchange-rate-value-${code}`}
-							/>
-							{errors[`rates.${code}`] ? (
-								<p className="text-[10px] leading-tight text-destructive" role="alert">
-									{errors[`rates.${code}`]}
-								</p>
-							) : null}
-						</div>
-					))}
+				<div className="grid gap-2">
+					<Label>Rates (base {base})</Label>
+					{errors.rates ? (
+						<p className="text-[10px] leading-tight text-destructive" role="alert">
+							{errors.rates}
+						</p>
+					) : null}
+					<div className="grid gap-2 sm:grid-cols-2">
+						{codes.map((code) => (
+							<div key={code} className="grid gap-1.5">
+								<Label htmlFor={`exchange-rate-${code}`}>{code}</Label>
+								<Input
+									id={`exchange-rate-${code}`}
+									type="number"
+									inputMode="decimal"
+									step="any"
+									min="0"
+									value={rates[code] ?? ''}
+									onChange={(e) => handleRateChange(code, e.target.value)}
+									disabled={pending}
+									aria-invalid={Boolean(errors[`rates.${code}`])}
+									data-testid={`exchange-rate-value-${code}`}
+								/>
+								{errors[`rates.${code}`] ? (
+									<p className="text-[10px] leading-tight text-destructive" role="alert">
+										{errors[`rates.${code}`]}
+									</p>
+								) : null}
+							</div>
+						))}
+					</div>
+				</div>
+
+				<div className="grid gap-2">
+					<Label htmlFor="exchange-rate-notes">Notes</Label>
+					<Textarea
+						id="exchange-rate-notes"
+						value={notes}
+						onChange={(e) => {
+							setNotes(e.target.value);
+							if (errors.notes) setErrors((prev) => ({ ...prev, notes: undefined }));
+						}}
+						disabled={pending}
+						rows={3}
+						maxLength={500}
+						aria-invalid={Boolean(errors.notes)}
+						data-testid="exchange-rate-notes"
+					/>
+					{errors.notes ? (
+						<p className="text-[10px] leading-tight text-destructive" role="alert">
+							{errors.notes}
+						</p>
+					) : null}
 				</div>
 			</div>
 
-			<div className="grid gap-2">
-				<Label htmlFor="exchange-rate-notes">Notes</Label>
-				<Textarea
-					id="exchange-rate-notes"
-					value={notes}
-					onChange={(e) => {
-						setNotes(e.target.value);
-						if (errors.notes) setErrors((prev) => ({ ...prev, notes: undefined }));
-					}}
-					disabled={pending}
-					rows={3}
-					maxLength={500}
-					aria-invalid={Boolean(errors.notes)}
-					data-testid="exchange-rate-notes"
-				/>
-				{errors.notes ? (
-					<p className="text-[10px] leading-tight text-destructive" role="alert">
-						{errors.notes}
-					</p>
-				) : null}
-			</div>
-
-			<DialogFooter>
-				<Button type="button" variant="ghost" onClick={onCancel} disabled={pending}>
+			<DialogFooter className="gap-2 border-t border-border px-6 py-4 sm:justify-end">
+				<Button type="button" variant="outline" onClick={onCancel} disabled={pending}>
 					Cancel
 				</Button>
 				<Button type="submit" disabled={pending} data-testid="exchange-rate-save">
@@ -248,7 +249,7 @@ function ExchangeRateFormFields({
 							Saving…
 						</>
 					) : isEdit ? (
-						'Save'
+						'Save changes'
 					) : (
 						'Create'
 					)}

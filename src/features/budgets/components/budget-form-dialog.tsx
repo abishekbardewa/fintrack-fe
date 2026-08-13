@@ -183,9 +183,7 @@ function BudgetFormFields({
 					{isEdit ? `Edit budget · ${periodLabel}` : `New budget · ${periodLabel}`}
 				</DialogTitle>
 				<DialogDescription>
-					{isEdit
-						? `Update the limit for ${editLabel}.`
-						: 'Set a spending limit for this month.'}
+					{isEdit ? `Update ${editLabel}.` : 'Set a limit for this month.'}
 				</DialogDescription>
 			</DialogHeader>
 

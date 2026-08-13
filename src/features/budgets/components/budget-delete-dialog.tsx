@@ -32,7 +32,7 @@ export function BudgetDeleteDialog({
 				<AlertDialogHeader>
 					<AlertDialogTitle>Delete budget?</AlertDialogTitle>
 					<AlertDialogDescription>
-						Delete the &ldquo;{budgetLabel}&rdquo; budget for this period? This cannot be undone.
+						Remove &ldquo;{budgetLabel}&rdquo; for this period. Can’t undo.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

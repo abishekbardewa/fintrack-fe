@@ -5,7 +5,6 @@ import {
 	deleteExchangeRate,
 	getExchangeRate,
 	listExchangeRates,
-	listSyncLogs,
 	retryExchangeRate,
 	syncTodayExchangeRate,
 	updateExchangeRate,
@@ -13,7 +12,6 @@ import {
 import type {
 	CreateExchangeRateRequest,
 	ListExchangeRatesParams,
-	ListSyncLogsParams,
 	UpdateExchangeRateRequest,
 } from '@/features/admin-exchange-rates/types';
 
@@ -22,7 +20,6 @@ export const exchangeRateKeys = {
 	lists: () => [...exchangeRateKeys.all, 'list'] as const,
 	list: (params: ListExchangeRatesParams) => [...exchangeRateKeys.lists(), params] as const,
 	detail: (date: string) => [...exchangeRateKeys.all, 'detail', date] as const,
-	logs: (params: ListSyncLogsParams) => [...exchangeRateKeys.all, 'logs', params] as const,
 };
 
 function invalidateExchangeRates(queryClient: ReturnType<typeof useQueryClient>) {
@@ -42,14 +39,6 @@ export function useExchangeRateQuery(date: string | null, enabled = true) {
 		queryKey: exchangeRateKeys.detail(date ?? ''),
 		queryFn: () => getExchangeRate(date!),
 		enabled: Boolean(date) && enabled,
-	});
-}
-
-export function useSyncLogsQuery(params: ListSyncLogsParams, enabled = true) {
-	return useQuery({
-		queryKey: exchangeRateKeys.logs(params),
-		queryFn: () => listSyncLogs(params),
-		enabled,
 	});
 }
 

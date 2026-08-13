@@ -51,7 +51,7 @@ export function GoalContributionsDialog({
 				<DialogHeader>
 					<DialogTitle>Contributions</DialogTitle>
 					<DialogDescription>
-						{goal ? `History for “${goal.name}”.` : 'Contribution history.'}
+						{goal ? `For “${goal.name}”.` : 'Contribution history.'}
 					</DialogDescription>
 				</DialogHeader>
 

@@ -135,9 +135,7 @@ export function TransactionExportDialog({
 			<DialogContent className="sm:max-w-md" data-testid="transaction-export-dialog">
 				<DialogHeader>
 					<DialogTitle>Export</DialogTitle>
-					<DialogDescription className="sr-only">
-						Download transactions as CSV or Excel.
-					</DialogDescription>
+					<DialogDescription>Download your transactions.</DialogDescription>
 				</DialogHeader>
 
 				<div className="space-y-4 text-sm">

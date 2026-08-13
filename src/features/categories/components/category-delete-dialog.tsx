@@ -32,7 +32,7 @@ export function CategoryDeleteDialog({
 				<AlertDialogHeader>
 					<AlertDialogTitle>Delete category?</AlertDialogTitle>
 					<AlertDialogDescription>
-						Delete &ldquo;{categoryName}&rdquo;? This cannot be undone.
+						Remove &ldquo;{categoryName}&rdquo;. Can’t undo.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

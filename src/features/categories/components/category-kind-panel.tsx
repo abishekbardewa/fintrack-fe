@@ -45,15 +45,15 @@ export function CategoryKindPanel({ kind }: CategoryKindPanelProps) {
 			: formMode?.type === 'create-sub'
 				? `Add under ${formMode.parent.name}`
 				: formMode?.type === 'rename'
-					? 'Rename category'
+					? 'Rename'
 					: '';
 
 	const formDescription =
 		formMode?.type === 'create-main'
-			? `New ${kind} category.`
+			? 'Give it a name.'
 			: formMode?.type === 'create-sub'
-				? `New category under ${formMode.parent.name}.`
-				: 'Enter a new name.';
+				? `Nested under ${formMode.parent.name}.`
+				: 'New name for this category.';
 
 	const formInitialName = formMode?.type === 'rename' ? formMode.category.name : '';
 	const formConfirmLabel =
