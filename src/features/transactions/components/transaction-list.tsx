@@ -91,17 +91,13 @@ export function TransactionList({
 											isIncome ? 'text-income' : 'text-foreground',
 										)}
 									>
-										<span
+										<KindIcon
 											className={cn(
-												'flex size-5 shrink-0 items-center justify-center rounded-full',
-												isIncome
-													? 'bg-income/15 text-income'
-													: 'bg-expense/15 text-expense',
+												'size-3.5 shrink-0',
+												isIncome ? 'text-income' : 'text-expense',
 											)}
 											aria-label={tx.type}
-										>
-											<KindIcon className="size-3" aria-hidden="true" />
-										</span>
+										/>
 										{isIncome ? '+' : '−'}
 										{formatMoney(tx.amount, tx.currency)}
 									</p>
@@ -150,17 +146,13 @@ export function TransactionList({
 										isIncome ? 'text-income' : 'text-foreground',
 									)}
 								>
-									<span
+									<KindIcon
 										className={cn(
-											'flex size-5 shrink-0 items-center justify-center rounded-full',
-											isIncome
-												? 'bg-income/15 text-income'
-												: 'bg-expense/15 text-expense',
+											'size-3.5 shrink-0',
+											isIncome ? 'text-income' : 'text-expense',
 										)}
 										aria-label={tx.type}
-									>
-										<KindIcon className="size-3" aria-hidden="true" />
-									</span>
+									/>
 									{isIncome ? '+' : '−'}
 									{formatMoney(tx.amount, tx.currency)}
 								</p>

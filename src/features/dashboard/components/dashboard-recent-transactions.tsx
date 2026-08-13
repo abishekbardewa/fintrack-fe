@@ -43,6 +43,7 @@ export function DashboardRecentTransactions({ items, currency }: DashboardRecent
 				<ul className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm divide-y divide-border">
 					{rows.map((tx) => {
 						const isIncome = tx.type === 'income';
+						const KindIcon = isIncome ? TrendingUp : TrendingDown;
 						const subcategory = tx.subcategoryName?.trim();
 						const category = subcategory || tx.categoryName;
 
@@ -52,19 +53,10 @@ export function DashboardRecentTransactions({ items, currency }: DashboardRecent
 								className="flex items-center gap-3 px-4 py-3"
 								data-testid={`dashboard-recent-${tx.id}`}
 							>
-								<div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-									<Badge
-										variant="secondary"
-										className={cn(
-											'px-1.5 py-0.5',
-											isIncome
-												? 'bg-income/15 text-income'
-												: 'bg-expense/15 text-expense',
-										)}
-										aria-label={tx.type}
-									>
-										{isIncome ? <TrendingUp /> : <TrendingDown />}
-									</Badge>
+								<div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+									<p className="shrink-0 text-xs font-medium text-foreground">
+										{formatDisplayDate(tx.date)}
+									</p>
 									<span className="inline-flex min-w-0 max-w-full items-center gap-1">
 										<Badge
 											variant="secondary"
@@ -89,16 +81,20 @@ export function DashboardRecentTransactions({ items, currency }: DashboardRecent
 											</Tooltip>
 										) : null}
 									</span>
-									<Badge variant="outline" className="shrink-0 px-2.5 py-0.5 text-muted-foreground">
-										{formatDisplayDate(tx.date)}
-									</Badge>
 								</div>
 								<p
 									className={cn(
-										'shrink-0 text-sm font-semibold tabular-nums',
+										'inline-flex shrink-0 items-center gap-1 text-xs font-semibold tabular-nums',
 										isIncome ? 'text-income' : 'text-foreground',
 									)}
 								>
+									<KindIcon
+										className={cn(
+											'size-3.5 shrink-0',
+											isIncome ? 'text-income' : 'text-expense',
+										)}
+										aria-label={tx.type}
+									/>
 									{isIncome ? '+' : '−'}
 									{formatMoney(tx.amount, currency)}
 								</p>

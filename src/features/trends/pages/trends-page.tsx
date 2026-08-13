@@ -43,6 +43,7 @@ export function TrendsPage() {
 	const userId = useAppSelector(selectUser)?.id;
 	const [range, setRange] = useState<TrendsRangeType>('last6');
 	const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+	const [selectionInitialized, setSelectionInitialized] = useState(false);
 	const { data, error, isLoading, isError, isPlaceholderData, refetch } = useTrendsQuery(
 		range,
 		selectedCategoryIds,
@@ -51,6 +52,7 @@ export function TrendsPage() {
 
 	useEffect(() => {
 		setSelectedCategoryIds([]);
+		setSelectionInitialized(false);
 	}, [userId]);
 
 	useEffect(() => {
@@ -65,6 +67,7 @@ export function TrendsPage() {
 			const defaults = options.slice(0, 2).map((category) => category.id);
 			return sameIds(defaults, prev) ? prev : defaults;
 		});
+		setSelectionInitialized(true);
 	}, [data, isPlaceholderData]);
 
 	useEffect(() => {
@@ -92,6 +95,15 @@ export function TrendsPage() {
 
 	const showError = isError && !data && toApiError(error).statusCode !== 422;
 	const showChromeSkeleton = isLoading && !data;
+
+	const categorySeriesReady =
+		selectedCategoryIds.length > 0 &&
+		selectedCategoryIds.every((id) =>
+			(data?.categorySeries ?? []).some((series) => series.categoryId === id),
+		);
+	const categoryChartPending =
+		Boolean(data) &&
+		(!selectionInitialized || (selectedCategoryIds.length > 0 && !categorySeriesReady));
 
 	return (
 		<div className="flex flex-col gap-8" data-testid="trends-page">
@@ -213,6 +225,7 @@ export function TrendsPage() {
 						onToggleCategory={toggleCategory}
 						currency={data.currency}
 						rangeLabel={data.range.label}
+						categoryChartPending={categoryChartPending}
 					/>
 				</>
 			) : null}
