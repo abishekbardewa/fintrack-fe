@@ -30,6 +30,18 @@ export async function updateMe(payload: UpdateMeRequest) {
 	return unwrapData(data, 'Failed to update profile.');
 }
 
+export async function updateAvatar(file: File) {
+	const formData = new FormData();
+	formData.append('avatar', file);
+
+	const { data } = await apiPrivate.put<ApiResponse<MeData>>(
+		`${ME_BASE}/avatar`,
+		formData,
+		{ headers: { 'Content-Type': undefined } },
+	);
+	return unwrapData(data, 'Failed to update avatar.');
+}
+
 export async function changePassword(payload: ChangePasswordRequest) {
 	const { data } = await apiPrivate.patch<ApiResponse<null>>(
 		`${ME_BASE}/password`,
