@@ -2,7 +2,6 @@ import { useState, type FormEvent } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import type { AuthUser } from '@/features/auth/types';
 import { useCurrenciesQuery } from '@/features/currencies/hooks/use-currencies';
+import { AvatarPicker } from '@/features/settings/components/avatar-picker';
 import { CurrencyChangeDialog } from '@/features/settings/components/currency-change-dialog';
 import { useUpdateMeMutation } from '@/features/settings/hooks/use-profile';
 import {
@@ -23,7 +23,6 @@ import {
 	type ProfileFormValues,
 } from '@/features/settings/schemas';
 import type { UpdateMeRequest } from '@/features/settings/types';
-import { userInitials } from '@/features/settings/utils';
 import { getErrorMessage, getFieldErrors } from '@/lib/api/errors';
 import { DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from '@/lib/currencies';
 
@@ -36,7 +35,7 @@ const PROFILE_FIELDS = ['name', 'currency'] as const;
 export function ProfileForm({ user }: ProfileFormProps) {
 	return (
 		<ProfileFormFields
-			key={`${user.id}:${user.updatedAt ?? ''}:${user.name}:${user.currency ?? ''}`}
+			key={`${user.id}:${user.name}:${user.currency ?? ''}`}
 			user={user}
 		/>
 	);
@@ -123,11 +122,7 @@ function ProfileFormFields({ user }: ProfileFormProps) {
 	return (
 		<>
 			<form onSubmit={handleSubmit} noValidate className="grid gap-6">
-				<Avatar className="size-20">
-					<AvatarFallback className="bg-primary/10 text-lg font-semibold text-primary">
-						{userInitials(user.name)}
-					</AvatarFallback>
-				</Avatar>
+				<AvatarPicker user={user} disabled={pending} />
 
 				<div className="grid gap-2">
 					<Label htmlFor="profile-name">Name</Label>

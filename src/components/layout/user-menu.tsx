@@ -2,7 +2,7 @@ import { KeyRound, LogOut, UserRound } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
 	DropdownMenu,
@@ -37,6 +37,9 @@ export function UserMenu() {
 					data-testid="user-menu-trigger"
 				>
 					<Avatar className="size-8">
+						{user?.avatarUrl ? (
+							<AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
+						) : null}
 						<AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
 							{userInitials(user?.name)}
 						</AvatarFallback>
@@ -47,6 +50,9 @@ export function UserMenu() {
 				<DropdownMenuLabel className="p-0 font-normal text-foreground">
 					<div className="flex items-center gap-3 px-2.5 py-2">
 						<Avatar className="size-9">
+							{user?.avatarUrl ? (
+								<AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
+							) : null}
 							<AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
 								{userInitials(user?.name)}
 							</AvatarFallback>

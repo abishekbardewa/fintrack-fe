@@ -6,6 +6,7 @@ import { dashboardKeys } from '@/features/dashboard/hooks/use-dashboard';
 import {
 	changePassword,
 	getMe,
+	updateAvatar,
 	updateMe,
 } from '@/features/settings/profile.service';
 import type { ChangePasswordRequest, UpdateMeRequest } from '@/features/settings/types';
@@ -40,6 +41,19 @@ export function useUpdateMeMutation() {
 			queryClient.setQueryData(profileKeys.me(), data);
 			void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
 			void queryClient.invalidateQueries({ queryKey: trendsKeys.all });
+		},
+	});
+}
+
+export function useUpdateAvatarMutation() {
+	const queryClient = useQueryClient();
+	const dispatch = useAppDispatch();
+
+	return useMutation({
+		mutationFn: (file: File) => updateAvatar(file),
+		onSuccess: (data) => {
+			dispatch(setUser(data.user));
+			queryClient.setQueryData(profileKeys.me(), data);
 		},
 	});
 }
