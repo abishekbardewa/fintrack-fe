@@ -16,7 +16,7 @@ const currencyCodes = SUPPORTED_CURRENCIES.map((c) => c.code) as [string, ...str
 
 export const loginSchema = z.object({
 	email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
-	password: passwordSchema,
+	password: z.string().min(1, 'Password is required'),
 });
 
 export const registerSchema = z.object({
