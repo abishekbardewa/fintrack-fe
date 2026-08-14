@@ -54,14 +54,23 @@ export function DateRangePicker({
 	'aria-label': ariaLabel,
 }: DateRangePickerProps) {
 	const [open, setOpen] = useState(false);
-	const selected: DateRange | undefined = {
+	const [draft, setDraft] = useState<DateRange | undefined>();
+
+	const applied: DateRange = {
 		from: parseDateInput(from),
 		to: parseDateInput(to),
 	};
-	const label = formatRangeLabel(selected.from, selected.to);
+	const hasApplied = Boolean(applied.from || applied.to);
+	const selected = draft ?? (hasApplied ? applied : undefined);
+	const label = formatRangeLabel(applied.from, applied.to);
+
+	const handleOpenChange = (next: boolean) => {
+		setDraft(next && hasApplied ? applied : undefined);
+		setOpen(next);
+	};
 
 	return (
-		<Popover open={open} onOpenChange={setOpen} modal>
+		<Popover open={open} onOpenChange={handleOpenChange} modal>
 			<PopoverTrigger asChild>
 				<button
 					type="button"
@@ -83,16 +92,20 @@ export function DateRangePicker({
 			<PopoverContent className="w-auto p-0" align="start">
 				<Calendar
 					mode="range"
+					min={1}
 					numberOfMonths={2}
-					selected={selected.from || selected.to ? selected : undefined}
+					selected={selected}
 					captionLayout="dropdown"
-					defaultMonth={selected.from ?? selected.to}
+					defaultMonth={selected?.from ?? selected?.to}
 					onSelect={(range) => {
-						onChange({
-							from: range?.from ? toDateInput(range.from) : '',
-							to: range?.to ? toDateInput(range.to) : '',
-						});
-						if (range?.from && range?.to) setOpen(false);
+						if (range?.from && range?.to) {
+							setDraft(undefined);
+							setOpen(false);
+							onChange({ from: toDateInput(range.from), to: toDateInput(range.to) });
+							return;
+						}
+						setDraft(range);
+						if (!range?.from && hasApplied) onChange({ from: '', to: '' });
 					}}
 				/>
 			</PopoverContent>
