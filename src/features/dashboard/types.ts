@@ -6,12 +6,22 @@ export interface DashboardSummary {
 	income: number;
 	expense: number;
 	net: number;
+	periodNet?: number;
 	savingsRate: number | null;
 	vsPrevious: {
 		incomePct: number | null;
 		expensePct: number | null;
 		netPct: number | null;
 	};
+	startingBalance?: number;
+	openingBalance?: number;
+	spendable?: number;
+	available?: number;
+	inGoals?: number;
+	inSavings?: number;
+	inInvestments?: number;
+	financialPosition?: number;
+	balance?: number;
 }
 
 export interface DashboardCashFlowPoint {
@@ -87,6 +97,7 @@ export interface DashboardRecentTransaction {
 	subcategoryName?: string | null;
 	amount: number;
 	date: string;
+	fundedFromGoalId?: string | null;
 }
 
 export interface DashboardData {

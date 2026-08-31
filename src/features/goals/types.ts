@@ -1,5 +1,12 @@
 export type SavingsGoalStatus = 'active' | 'completed' | 'cancelled';
 
+export type GoalContributionSource =
+	| 'set_aside'
+	| 'starting_balance'
+	| 'goal_spend'
+	| 'return_to_available'
+	| 'manual';
+
 export interface SavingsGoal {
 	id: string;
 	name: string;
@@ -24,22 +31,47 @@ export interface GoalContribution {
 	amountPreferred?: number;
 	date: string;
 	note: string | null;
-	source: 'manual' | 'income_transaction';
+	source: GoalContributionSource;
 	transactionId: string | null;
+	categoryId?: string | null;
+	subcategoryId?: string | null;
+	description?: string | null;
 	createdAt?: string;
 	updatedAt?: string;
 }
 
+export interface GoalsMoney {
+	startingBalance: number;
+	openingBalance: number;
+	spendable: number;
+	available: number;
+	inGoals: number;
+	inSavings?: number;
+	inInvestments?: number;
+	financialPosition?: number;
+	balance: number;
+}
+
 export interface GoalsListData {
 	goals: SavingsGoal[];
+	money?: GoalsMoney;
 }
 
 export interface GoalMutationData {
 	goal: SavingsGoal;
 }
 
+export interface ContributionListParams {
+	page?: number;
+	limit?: number;
+}
+
 export interface ContributionsListData {
-	contributions: GoalContribution[];
+	items: GoalContribution[];
+	page: number;
+	limit: number;
+	total: number;
+	totalPages: number;
 }
 
 export interface ContributionMutationData {
@@ -52,8 +84,7 @@ export interface CreateGoalRequest {
 	targetAmount: number;
 	currency?: string;
 	targetDate?: string;
-	initialAmount?: number;
-	initialDate?: string;
+	startingAmount?: number;
 }
 
 export interface UpdateGoalRequest {
@@ -70,4 +101,45 @@ export interface CreateContributionRequest {
 	note?: string;
 }
 
-export const MAX_ACTIVE_SAVINGS_GOALS = 10;
+export interface StartingBalanceRequest {
+	amount: number;
+	date?: string;
+}
+
+export interface UpdateContributionRequest {
+	amount?: number;
+	currency?: string;
+	date?: string;
+	note?: string | null;
+	categoryId?: string;
+	subcategoryId?: string | null;
+	description?: string | null;
+}
+
+export interface SpendFromGoalRequest {
+	amount: number;
+	currency?: string;
+	categoryId: string;
+	subcategoryId?: string;
+	description?: string;
+	date?: string;
+}
+
+export interface ReturnToAvailableRequest {
+	amount?: number;
+	currency?: string;
+	date?: string;
+	note?: string;
+	cancel?: boolean;
+}
+
+export interface SpendFromGoalData {
+	contribution: GoalContribution;
+	goal: SavingsGoal;
+}
+
+export interface ReturnToAvailableData {
+	contribution: GoalContribution | null;
+	goal: SavingsGoal;
+}
+

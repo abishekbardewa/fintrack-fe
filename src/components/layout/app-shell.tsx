@@ -10,21 +10,27 @@ export function AppShell() {
 	const [collapsed, setCollapsed] = useSidebarCollapsed();
 
 	return (
-		<div className="min-h-svh bg-background text-foreground">
+		<div className="min-h-svh bg-background text-foreground md:bg-sidebar">
 			<SidebarNav collapsed={collapsed} onCollapsedChange={setCollapsed} />
 			<div
 				className={cn(
-					'min-w-0 bg-background transition-[padding] duration-300 ease-in-out',
-					collapsed ? 'md:pl-0' : 'md:pl-64',
+					'min-w-0 bg-background transition-[padding] duration-300 ease-in-out md:bg-transparent',
+					collapsed ? 'md:pl-16' : 'md:pl-64',
 				)}
 			>
-				<AppHeader
-					showSidebarExpand={collapsed}
-					onExpandSidebar={() => setCollapsed(false)}
-				/>
-				<main className="min-h-[calc(100svh-3.5rem)] w-full max-w-[1400px] px-5 pb-24 pt-6 md:px-6 md:pb-8 md:pt-8">
-					<Outlet />
-				</main>
+				<div className="md:p-3">
+					<AppHeader />
+					<main
+						className={cn(
+							'min-h-[calc(100svh-3.5rem)] w-full px-5 pb-24 pt-6',
+							'md:min-h-[calc(100svh-1.5rem)] md:rounded-[2rem] md:bg-background md:px-6 md:pb-8 md:pt-6',
+						)}
+					>
+						<div className="w-full max-w-[1400px]">
+							<Outlet />
+						</div>
+					</main>
+				</div>
 			</div>
 			<MobileBottomNav />
 		</div>

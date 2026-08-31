@@ -521,7 +521,7 @@ function TransactionFormFields({
 				</div>
 
 				<div className="grid gap-2">
-					<Label htmlFor="tx-description">Description (Optional)</Label>
+					<Label htmlFor="tx-description">Note</Label>
 					<AutoGrowDescription
 						id="tx-description"
 						value={values.description ?? ''}

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { DatePicker } from '@/components/ui/date-picker';
 import {
 	Dialog,
 	DialogContent,
@@ -13,33 +12,28 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { GoalNoteLabel } from '@/features/goals/components/goal-note-label';
 import {
-	contributionFieldErrors,
-	contributionFormSchema,
-	type ContributionFormValues,
+	contributeFieldErrors,
+	contributeFormSchema,
+	type ContributeFormValues,
 } from '@/features/goals/schemas';
 import type { SavingsGoal } from '@/features/goals/types';
-import { todayDateInput, dateInputToIso } from '@/features/transactions/utils';
 
 interface GoalContributeDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	goal: SavingsGoal | null;
-	preferredCurrency: string;
+	maxAmount?: number;
 	pending?: boolean;
-	onSubmit: (payload: {
-		amount: number;
-		currency: string;
-		date: string;
-		note?: string;
-	}) => Promise<void> | void;
+	onSubmit: (payload: { amount: number; note?: string }) => Promise<void> | void;
 }
 
 export function GoalContributeDialog({
 	open,
 	onOpenChange,
 	goal,
-	preferredCurrency,
+	maxAmount,
 	pending = false,
 	onSubmit,
 }: GoalContributeDialogProps) {
@@ -50,7 +44,7 @@ export function GoalContributeDialog({
 					<ContributeFormFields
 						key={goal.id}
 						goalName={goal.name}
-						preferredCurrency={preferredCurrency}
+						maxAmount={maxAmount}
 						pending={pending}
 						onCancel={() => onOpenChange(false)}
 						onSubmit={onSubmit}
@@ -63,7 +57,7 @@ export function GoalContributeDialog({
 
 interface ContributeFormFieldsProps {
 	goalName: string;
-	preferredCurrency: string;
+	maxAmount?: number;
 	pending: boolean;
 	onCancel: () => void;
 	onSubmit: GoalContributeDialogProps['onSubmit'];
@@ -71,23 +65,20 @@ interface ContributeFormFieldsProps {
 
 function ContributeFormFields({
 	goalName,
-	preferredCurrency,
+	maxAmount,
 	pending,
 	onCancel,
 	onSubmit,
 }: ContributeFormFieldsProps) {
-	const [values, setValues] = useState<ContributionFormValues>(() => ({
+	const [values, setValues] = useState<ContributeFormValues>(() => ({
 		amount: '',
-		date: todayDateInput(),
 		note: '',
 	}));
-	const [errors, setErrors] = useState<
-		Partial<Record<keyof ContributionFormValues, string>>
-	>({});
+	const [errors, setErrors] = useState<Partial<Record<keyof ContributeFormValues, string>>>({});
 
-	const setField = <K extends keyof ContributionFormValues>(
+	const setField = <K extends keyof ContributeFormValues>(
 		key: K,
-		value: ContributionFormValues[K],
+		value: ContributeFormValues[K],
 	) => {
 		setValues((prev) => ({ ...prev, [key]: value }));
 		if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
@@ -95,16 +86,19 @@ function ContributeFormFields({
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		const fieldErrors = contributionFieldErrors(values);
+		const fieldErrors = contributeFieldErrors(values);
 		if (Object.keys(fieldErrors).length > 0) {
 			setErrors(fieldErrors);
 			return;
 		}
-		const parsed = contributionFormSchema.parse(values);
+		const parsed = contributeFormSchema.parse(values);
+		const amount = Number(parsed.amount);
+		if (maxAmount != null && amount > maxAmount) {
+			setErrors((prev) => ({ ...prev, amount: 'Amount exceeds Spendable Money' }));
+			return;
+		}
 		await onSubmit({
-			amount: Number(parsed.amount),
-			currency: preferredCurrency,
-			date: dateInputToIso(parsed.date),
+			amount,
 			note: parsed.note.trim() || undefined,
 		});
 	};
@@ -112,8 +106,8 @@ function ContributeFormFields({
 	return (
 		<form onSubmit={handleSubmit} noValidate>
 			<DialogHeader>
-				<DialogTitle>Add contribution</DialogTitle>
-				<DialogDescription>Toward &ldquo;{goalName}&rdquo;.</DialogDescription>
+				<DialogTitle>Add Money</DialogTitle>
+				<DialogDescription>Add money to “{goalName}”.</DialogDescription>
 			</DialogHeader>
 
 			<div className="grid gap-4 py-4">
@@ -127,7 +121,7 @@ function ContributeFormFields({
 						step="any"
 						value={values.amount}
 						onChange={(e) => setField('amount', e.target.value)}
-						placeholder="500"
+						placeholder="e.g. 5,000"
 						className="tabular-nums"
 						disabled={pending}
 						aria-invalid={Boolean(errors.amount)}
@@ -137,24 +131,11 @@ function ContributeFormFields({
 				</div>
 
 				<div className="grid gap-2">
-					<Label>Date</Label>
-					<DatePicker
-						value={values.date}
-						onChange={(v) => setField('date', v)}
-						disabled={pending}
-						invalid={Boolean(errors.date)}
-						aria-label="Contribution date"
-					/>
-					{errors.date ? <p className="text-[10px] leading-tight text-destructive">{errors.date}</p> : null}
-				</div>
-
-				<div className="grid gap-2">
-					<Label htmlFor="contrib-note">Note (optional)</Label>
+					<GoalNoteLabel htmlFor="contrib-note" />
 					<Input
 						id="contrib-note"
 						value={values.note}
 						onChange={(e) => setField('note', e.target.value)}
-						placeholder="August savings"
 						disabled={pending}
 						aria-invalid={Boolean(errors.note)}
 					/>
@@ -173,7 +154,7 @@ function ContributeFormFields({
 							Saving…
 						</>
 					) : (
-						'Add contribution'
+						'Add Money'
 					)}
 				</Button>
 			</DialogFooter>

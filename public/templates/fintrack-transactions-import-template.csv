@@ -1,4 +1,4 @@
-date,type,category,subcategory (optional),amount,currency (optional),description (optional)
+date,type,category,subcategory (optional),amount,currency (optional),note (optional)
 2026-08-01,income,Salary,,85000,INR,Monthly salary
 2026-08-04,expense,Food,Groceries,500,INR,Weekly veggies
 2026-08-05,expense,Transport,,120,INR,Metro top-up

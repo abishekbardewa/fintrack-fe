@@ -1,4 +1,4 @@
-import { Info, MoreHorizontal, Pencil, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
+import { History, MoreHorizontal, Pencil, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Transaction } from '@/features/transactions/types';
 import { formatDisplayDate, formatMoney } from '@/features/transactions/utils';
 import { cn } from '@/lib/utils';
@@ -16,16 +15,18 @@ import { cn } from '@/lib/utils';
 interface TransactionListProps {
 	items: Transaction[];
 	categoryLabels: Map<string, string>;
+	goalNames?: Map<string, string>;
 	preferredCurrency: string;
 	onEdit: (tx: Transaction) => void;
 	onDelete: (tx: Transaction) => void;
+	onManageFromGoal: (tx: Transaction) => void;
 }
 
 function categoryLabel(tx: Transaction, labels: Map<string, string>) {
-	if (tx.subcategoryId) {
-		return labels.get(tx.subcategoryId) ?? labels.get(tx.categoryId) ?? 'Category';
-	}
-	return labels.get(tx.categoryId) ?? 'Category';
+	const main = labels.get(tx.categoryId) ?? 'Category';
+	if (!tx.subcategoryId) return main;
+	const sub = labels.get(tx.subcategoryId);
+	return sub ? `${main}-${sub}` : main;
 }
 
 const ROW_GRID =
@@ -34,9 +35,11 @@ const ROW_GRID =
 export function TransactionList({
 	items,
 	categoryLabels,
+	goalNames,
 	preferredCurrency,
 	onEdit,
 	onDelete,
+	onManageFromGoal,
 }: TransactionListProps) {
 	return (
 		<div
@@ -51,7 +54,7 @@ export function TransactionList({
 			>
 				<span>Spend date</span>
 				<span>Category</span>
-				<span>Description</span>
+				<span>Note</span>
 				<span>Updated</span>
 				<span className="text-right">Amount</span>
 				<span className="sr-only">Actions</span>
@@ -62,8 +65,6 @@ export function TransactionList({
 					const isIncome = tx.type === 'income';
 					const KindIcon = isIncome ? TrendingUp : TrendingDown;
 					const category = categoryLabel(tx, categoryLabels);
-					const mainCategory =
-						tx.subcategoryId != null ? categoryLabels.get(tx.categoryId) : undefined;
 					const description = tx.description?.trim() || '';
 					const updated = tx.updatedAt ? formatDisplayDate(tx.updatedAt) : '—';
 					const showPreferred =
@@ -104,25 +105,14 @@ export function TransactionList({
 								</div>
 							</div>
 
-							<div className="mb-2 flex min-w-0 items-center gap-1 sm:mb-0">
+							<div className="mb-2 min-w-0 sm:mb-0">
 								<Badge variant="secondary" className="max-w-full truncate px-2.5 py-0.5">
 									{category}
 								</Badge>
-								{mainCategory ? (
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<button
-												type="button"
-												className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
-												aria-label={`This falls under ${mainCategory} category`}
-											>
-												<Info className="size-3.5" aria-hidden="true" />
-											</button>
-										</TooltipTrigger>
-										<TooltipContent sideOffset={6}>
-											This falls under {mainCategory} category
-										</TooltipContent>
-									</Tooltip>
+								{tx.fundedFromGoalId ? (
+									<p className="mt-0.5 truncate text-xs text-primary">
+										Spend from Goal: {goalNames?.get(tx.fundedFromGoalId) ?? 'Goal'}
+									</p>
 								) : null}
 							</div>
 
@@ -177,14 +167,23 @@ export function TransactionList({
 										</Button>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent align="end">
-										<DropdownMenuItem onClick={() => onEdit(tx)}>
-											<Pencil className="size-4" />
-											Edit
-										</DropdownMenuItem>
-										<DropdownMenuItem variant="destructive" onClick={() => onDelete(tx)}>
-											<Trash2 className="size-4" />
-											Delete
-										</DropdownMenuItem>
+										{tx.fundedFromGoalId ? (
+											<DropdownMenuItem onClick={() => onManageFromGoal(tx)}>
+												<History className="size-4" />
+												Manage in goal history
+											</DropdownMenuItem>
+										) : (
+											<>
+												<DropdownMenuItem onClick={() => onEdit(tx)}>
+													<Pencil className="size-4" />
+													Edit
+												</DropdownMenuItem>
+												<DropdownMenuItem variant="destructive" onClick={() => onDelete(tx)}>
+													<Trash2 className="size-4" />
+													Delete
+												</DropdownMenuItem>
+											</>
+										)}
 									</DropdownMenuContent>
 								</DropdownMenu>
 							</div>

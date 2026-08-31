@@ -2,18 +2,9 @@ import { Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-	useContributionsQuery,
-	useDeleteContributionMutation,
-} from '@/features/goals/hooks/use-goals';
+import { useContributionsQuery, useDeleteContributionMutation } from '@/features/goals/hooks/use-goals';
 import type { SavingsGoal } from '@/features/goals/types';
 import { formatDisplayDate, formatMoney } from '@/features/goals/utils';
 import { getErrorMessage } from '@/lib/api/errors';
@@ -25,12 +16,7 @@ interface GoalContributionsDialogProps {
 	preferredCurrency: string;
 }
 
-export function GoalContributionsDialog({
-	open,
-	onOpenChange,
-	goal,
-	preferredCurrency,
-}: GoalContributionsDialogProps) {
+export function GoalContributionsDialog({ open, onOpenChange, goal, preferredCurrency }: GoalContributionsDialogProps) {
 	const goalId = open && goal ? goal.id : null;
 	const { data, isLoading, isError, refetch } = useContributionsQuery(goalId);
 	const deleteMutation = useDeleteContributionMutation();
@@ -50,9 +36,7 @@ export function GoalContributionsDialog({
 			<DialogContent className="max-w-lg">
 				<DialogHeader>
 					<DialogTitle>Contributions</DialogTitle>
-					<DialogDescription>
-						{goal ? `For “${goal.name}”.` : 'Contribution history.'}
-					</DialogDescription>
+					<DialogDescription>{goal ? `For “${goal.name}”.` : 'Contribution history.'}</DialogDescription>
 				</DialogHeader>
 
 				{isLoading ? (
@@ -71,30 +55,21 @@ export function GoalContributionsDialog({
 					</div>
 				) : null}
 
-				{!isLoading && !isError && (data?.contributions.length ?? 0) === 0 ? (
-					<p className="py-6 text-center text-sm text-muted-foreground">
-						No contributions yet.
-					</p>
+				{!isLoading && !isError && (data?.items.length ?? 0) === 0 ? (
+					<p className="py-6 text-center text-sm text-muted-foreground">No contributions yet.</p>
 				) : null}
 
-				{!isLoading && !isError && (data?.contributions.length ?? 0) > 0 ? (
+				{!isLoading && !isError && (data?.items.length ?? 0) > 0 ? (
 					<ul className="max-h-80 divide-y divide-border overflow-y-auto rounded-xl border border-border/60">
-						{data!.contributions.map((item) => {
+						{data!.items.map((item) => {
 							const amount = item.amountPreferred ?? item.amount;
-							const currency =
-								item.amountPreferred != null ? preferredCurrency : item.currency;
+							const currency = item.amountPreferred != null ? preferredCurrency : item.currency;
 							const canDelete = item.source === 'manual';
 
 							return (
-								<li
-									key={item.id}
-									className="flex items-center gap-3 px-3 py-2.5"
-									data-testid={`contribution-row-${item.id}`}
-								>
+								<li key={item.id} className="flex items-center gap-3 px-3 py-2.5" data-testid={`contribution-row-${item.id}`}>
 									<div className="min-w-0 flex-1">
-										<p className="text-sm font-medium tabular-nums text-foreground">
-											{formatMoney(amount, currency)}
-										</p>
+										<p className="text-sm font-medium tabular-nums text-foreground">{formatMoney(amount, currency)}</p>
 										<p className="text-xs text-muted-foreground">
 											{formatDisplayDate(item.date)}
 											{item.note ? ` · ${item.note}` : ''}
@@ -109,11 +84,7 @@ export function GoalContributionsDialog({
 											aria-label="Delete contribution"
 											onClick={() => void handleDelete(item.id)}
 										>
-											{deleteMutation.isPending ? (
-												<Loader2 className="animate-spin" />
-											) : (
-												<Trash2 />
-											)}
+											{deleteMutation.isPending ? <Loader2 className="animate-spin" /> : <Trash2 />}
 										</Button>
 									) : null}
 								</li>

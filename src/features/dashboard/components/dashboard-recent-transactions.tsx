@@ -10,9 +10,14 @@ import { cn } from '@/lib/utils';
 interface DashboardRecentTransactionsProps {
 	items: DashboardRecentTransaction[];
 	currency: string;
+	goalNames?: Map<string, string>;
 }
 
-export function DashboardRecentTransactions({ items, currency }: DashboardRecentTransactionsProps) {
+export function DashboardRecentTransactions({
+	items,
+	currency,
+	goalNames,
+}: DashboardRecentTransactionsProps) {
 	const rows = items.slice(0, 5);
 
 	return (
@@ -57,28 +62,35 @@ export function DashboardRecentTransactions({ items, currency }: DashboardRecent
 									<p className="shrink-0 text-xs font-medium text-foreground">
 										{formatDisplayDate(tx.date)}
 									</p>
-									<span className="inline-flex min-w-0 max-w-full items-center gap-1">
-										<Badge
-											variant="secondary"
-											className="max-w-full truncate px-2.5 py-0.5"
-										>
-											{category}
-										</Badge>
-										{subcategory ? (
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<button
-														type="button"
-														className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
-														aria-label={`This falls under ${tx.categoryName} category`}
-													>
-														<Info className="size-3.5" aria-hidden="true" />
-													</button>
-												</TooltipTrigger>
-												<TooltipContent sideOffset={6}>
-													This falls under {tx.categoryName} category
-												</TooltipContent>
-											</Tooltip>
+									<span className="inline-flex min-w-0 max-w-full flex-col gap-0.5">
+										<span className="inline-flex min-w-0 max-w-full items-center gap-1">
+											<Badge
+												variant="secondary"
+												className="max-w-full truncate px-2.5 py-0.5"
+											>
+												{category}
+											</Badge>
+											{subcategory ? (
+												<Tooltip>
+													<TooltipTrigger asChild>
+														<button
+															type="button"
+															className="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+															aria-label={`This falls under ${tx.categoryName} category`}
+														>
+															<Info className="size-3.5" aria-hidden="true" />
+														</button>
+													</TooltipTrigger>
+													<TooltipContent sideOffset={6}>
+														This falls under {tx.categoryName} category
+													</TooltipContent>
+												</Tooltip>
+											) : null}
+										</span>
+										{tx.fundedFromGoalId ? (
+											<span className="truncate text-xs text-primary">
+												Spend from Goal: {goalNames?.get(tx.fundedFromGoalId) ?? 'Goal'}
+											</span>
 										) : null}
 									</span>
 								</div>

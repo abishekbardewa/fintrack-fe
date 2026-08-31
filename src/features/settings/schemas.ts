@@ -15,7 +15,18 @@ export const currencyFormSchema = z.object({
 	currency: z.string().min(1, 'Select a currency'),
 });
 
-export const profileFormSchema = profileNameSchema.merge(currencyFormSchema);
+export const openingBalanceFormSchema = z.object({
+	openingBalanceAmount: z
+		.string()
+		.trim()
+		.min(1, 'Starting balance amount is required')
+		.refine((v) => !Number.isNaN(Number(v)) && Number(v) >= 0, 'Enter a valid amount'),
+	openingBalanceCurrency: z.string().min(1, 'Select starting balance currency'),
+});
+
+export const profileFormSchema = profileNameSchema
+	.merge(currencyFormSchema)
+	.merge(openingBalanceFormSchema);
 
 export const changePasswordSchema = z
 	.object({
@@ -29,6 +40,7 @@ export const changePasswordSchema = z
 
 export type ProfileNameValues = z.infer<typeof profileNameSchema>;
 export type CurrencyFormValues = z.infer<typeof currencyFormSchema>;
+export type OpeningBalanceFormValues = z.infer<typeof openingBalanceFormSchema>;
 export type ProfileFormValues = z.infer<typeof profileFormSchema>;
 export type ChangePasswordValues = z.infer<typeof changePasswordSchema>;
 

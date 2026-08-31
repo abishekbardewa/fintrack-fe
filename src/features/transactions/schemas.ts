@@ -15,7 +15,7 @@ export const transactionFormSchema = z.object({
 	description: z
 		.string()
 		.trim()
-		.max(500, 'Description must be at most 500 characters')
+		.max(500, 'Note must be at most 500 characters')
 		.optional()
 		.or(z.literal('')),
 	date: z.string().min(1, 'Date is required'),

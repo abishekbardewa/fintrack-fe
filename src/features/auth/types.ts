@@ -1,5 +1,13 @@
 export type UserRole = 'user' | 'admin';
 
+export interface OpeningBalance {
+	amount: number;
+	currency: string;
+	setAt: string | null;
+}
+
+export type StartingBalance = OpeningBalance;
+
 export interface AuthUser {
 	id: string;
 	name: string;
@@ -8,6 +16,9 @@ export interface AuthUser {
 	avatarUrl?: string | null;
 	currency?: string;
 	timezone?: string;
+	openingBalance?: OpeningBalance;
+	startingBalance?: StartingBalance;
+	startingBalancePromptDismissedAt?: string | null;
 	createdAt?: string;
 	updatedAt?: string;
 }

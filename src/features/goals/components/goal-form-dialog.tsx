@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Info, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
 	goalFieldErrors,
 	goalFormSchema,
@@ -26,7 +27,6 @@ interface GoalFormDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	goal?: SavingsGoal | null;
-	preferredCurrency: string;
 	pending?: boolean;
 	onSubmit: (
 		payload:
@@ -43,7 +43,6 @@ export function GoalFormDialog({
 	open,
 	onOpenChange,
 	goal,
-	preferredCurrency,
 	pending = false,
 	onSubmit,
 }: GoalFormDialogProps) {
@@ -54,7 +53,6 @@ export function GoalFormDialog({
 					<GoalFormFields
 						key={goal?.id ?? 'create'}
 						goal={goal}
-						preferredCurrency={preferredCurrency}
 						pending={pending}
 						onCancel={() => onOpenChange(false)}
 						onSubmit={onSubmit}
@@ -67,26 +65,18 @@ export function GoalFormDialog({
 
 interface GoalFormFieldsProps {
 	goal?: SavingsGoal | null;
-	preferredCurrency: string;
 	pending: boolean;
 	onCancel: () => void;
 	onSubmit: GoalFormDialogProps['onSubmit'];
 }
 
-function GoalFormFields({
-	goal,
-	preferredCurrency,
-	pending,
-	onCancel,
-	onSubmit,
-}: GoalFormFieldsProps) {
+function GoalFormFields({ goal, pending, onCancel, onSubmit }: GoalFormFieldsProps) {
 	const isEdit = goal != null;
 	const [values, setValues] = useState<GoalFormValues>(() => ({
 		name: goal?.name ?? '',
 		targetAmount: goal ? String(goal.targetAmount) : '',
 		targetDate: goal?.targetDate ? toDateInputValue(goal.targetDate) : '',
-		initialAmount: '',
-		initialDate: '',
+		startingAmount: '',
 	}));
 	const [errors, setErrors] = useState<Partial<Record<keyof GoalFormValues, string>>>({});
 
@@ -116,16 +106,12 @@ function GoalFormFields({
 		const createPayload: CreateGoalRequest = {
 			name: parsed.name,
 			targetAmount: Number(parsed.targetAmount),
-			currency: preferredCurrency,
 		};
 		if (parsed.targetDate) {
 			createPayload.targetDate = dateInputToIso(parsed.targetDate);
 		}
-		if (parsed.initialAmount) {
-			createPayload.initialAmount = Number(parsed.initialAmount);
-		}
-		if (parsed.initialDate) {
-			createPayload.initialDate = dateInputToIso(parsed.initialDate);
+		if (parsed.startingAmount.trim()) {
+			createPayload.startingAmount = Number(parsed.startingAmount);
 		}
 		await onSubmit(createPayload);
 	};
@@ -133,9 +119,9 @@ function GoalFormFields({
 	return (
 		<form onSubmit={handleSubmit} noValidate>
 			<DialogHeader>
-				<DialogTitle>{isEdit ? 'Edit goal' : 'New goal'}</DialogTitle>
+				<DialogTitle>{isEdit ? 'Edit Goal' : 'Create Goal'}</DialogTitle>
 				<DialogDescription>
-					{isEdit ? 'Update this goal.' : 'Name it and set a target.'}
+					{isEdit ? 'Update this goal.' : "Set a target for something you're saving for."}
 				</DialogDescription>
 			</DialogHeader>
 
@@ -146,7 +132,7 @@ function GoalFormFields({
 						id="goal-name"
 						value={values.name}
 						onChange={(e) => setField('name', e.target.value)}
-						placeholder="Emergency fund"
+						placeholder="e.g. New Goal"
 						disabled={pending}
 						aria-invalid={Boolean(errors.name)}
 						data-testid="goal-name-input"
@@ -155,7 +141,7 @@ function GoalFormFields({
 				</div>
 
 				<div className="grid gap-2">
-					<Label htmlFor="goal-target">Target amount</Label>
+					<Label htmlFor="goal-target">Target Amount</Label>
 					<Input
 						id="goal-target"
 						type="number"
@@ -164,7 +150,7 @@ function GoalFormFields({
 						step="any"
 						value={values.targetAmount}
 						onChange={(e) => setField('targetAmount', e.target.value)}
-						placeholder="10000"
+						placeholder="e.g. 10,000"
 						className="tabular-nums"
 						disabled={pending}
 						aria-invalid={Boolean(errors.targetAmount)}
@@ -177,7 +163,7 @@ function GoalFormFields({
 
 				<div className="grid gap-2">
 					<div className="flex items-center justify-between gap-2">
-						<Label>Target date (optional)</Label>
+						<Label>Target Date</Label>
 						{values.targetDate ? (
 							<button
 								type="button"
@@ -198,55 +184,46 @@ function GoalFormFields({
 					/>
 				</div>
 
-				{!isEdit ? (
-					<>
-						<div className="grid gap-2">
-							<Label htmlFor="goal-initial-amount">Already saved (optional)</Label>
-							<Input
-								id="goal-initial-amount"
-								type="number"
-								inputMode="decimal"
-								min="0"
-								step="any"
-								value={values.initialAmount}
-								onChange={(e) => setField('initialAmount', e.target.value)}
-								placeholder="500"
-								className="tabular-nums"
-								disabled={pending}
-								aria-invalid={Boolean(errors.initialAmount)}
-								data-testid="goal-initial-amount-input"
-							/>
-							{errors.initialAmount ? (
-								<p className="text-[10px] leading-tight text-destructive">
-									{errors.initialAmount}
-								</p>
-							) : null}
-						</div>
-
-						<div className="grid gap-2">
-							<div className="flex items-center justify-between gap-2">
-								<Label>Saved on (optional)</Label>
-								{values.initialDate ? (
+				{isEdit ? null : (
+					<div className="grid gap-2">
+						<div className="flex items-center gap-1">
+							<Label htmlFor="goal-starting-amount">Starting Amount</Label>
+							<Tooltip>
+								<TooltipTrigger asChild>
 									<button
 										type="button"
-										className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-										onClick={() => setField('initialDate', '')}
-										disabled={pending}
+										className="inline-flex size-5 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+										aria-label="About starting amount"
 									>
-										Clear
+										<Info className="size-3.5" aria-hidden="true" />
 									</button>
-								) : null}
-							</div>
-							<DatePicker
-								value={values.initialDate}
-								onChange={(v) => setField('initialDate', v)}
-								placeholder="No date"
-								disabled={pending}
-								aria-label="Saved on"
-							/>
+								</TooltipTrigger>
+								<TooltipContent sideOffset={6}>
+									Money already in this goal.
+								</TooltipContent>
+							</Tooltip>
 						</div>
-					</>
-				) : null}
+						<Input
+							id="goal-starting-amount"
+							type="number"
+							inputMode="decimal"
+							min="0"
+							step="any"
+							value={values.startingAmount}
+							onChange={(e) => setField('startingAmount', e.target.value)}
+							placeholder="e.g. 10,000"
+							className="tabular-nums"
+							disabled={pending}
+							aria-invalid={Boolean(errors.startingAmount)}
+							data-testid="goal-starting-amount-input"
+						/>
+						{errors.startingAmount ? (
+							<p className="text-[10px] leading-tight text-destructive">
+								{errors.startingAmount}
+							</p>
+						) : null}
+					</div>
+				)}
 			</div>
 
 			<DialogFooter>
@@ -260,9 +237,9 @@ function GoalFormFields({
 							Saving…
 						</>
 					) : isEdit ? (
-						'Save changes'
+						'Save'
 					) : (
-						'Create goal'
+						'Create Goal'
 					)}
 				</Button>
 			</DialogFooter>

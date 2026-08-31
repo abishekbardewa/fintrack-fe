@@ -294,7 +294,10 @@ export function BudgetsPage() {
 				onOpenChange={(open) => {
 					if (!open) setDeleting(null);
 				}}
+				budget={deleting}
 				budgetLabel={deletingLabel}
+				periodLabel={periodLabel}
+				preferredCurrency={preferredCurrency}
 				pending={deleteMutation.isPending}
 				onConfirm={() => void handleDelete()}
 			/>

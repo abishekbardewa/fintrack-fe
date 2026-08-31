@@ -48,11 +48,13 @@ export function DashboardGoalsStrip({ goals, currency }: DashboardGoalsStripProp
 					</span>
 				</div>
 				<p className="mt-1 text-xs text-muted-foreground tabular-nums">
-					{formatMoney(goal.current, currency)} / {formatMoney(goal.target, currency)}
+					<span className="text-foreground">{formatMoney(goal.current, currency)}</span>
+					{' Goal Balance · '}
+					<span className="text-foreground">{formatMoney(goal.target, currency)}</span> Target
 				</p>
 				<Progress value={Math.min(100, goal.percent)} className="mt-3 h-2" />
 				<p className="mt-2 text-xs text-muted-foreground">
-					{formatMoney(goal.remaining, currency)} left
+					{formatMoney(goal.remaining, currency)} Remaining
 					{goal.daysLeft != null ? ` · ${goal.daysLeft}d` : ''}
 				</p>
 			</div>

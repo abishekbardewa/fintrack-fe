@@ -37,7 +37,7 @@ const COLUMN_ALIASES: Record<string, ImportColumnKey> = {
 	subcategory: 'subcategory',
 	amount: 'amount',
 	currency: 'currency',
-	description: 'description',
+	note: 'description',
 };
 
 function normalizeHeader(value: string) {

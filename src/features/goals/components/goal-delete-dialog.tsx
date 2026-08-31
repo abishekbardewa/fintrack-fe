@@ -1,5 +1,6 @@
 import { Loader2 } from 'lucide-react';
 
+import { ConfirmCopy, ConfirmHighlight } from '@/components/common/confirm-delete-details';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -10,11 +11,13 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import type { SavingsGoal } from '@/features/goals/types';
 
 interface GoalDeleteDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	goalName: string;
+	goal: SavingsGoal | null;
+	preferredCurrency: string;
 	pending?: boolean;
 	onConfirm: () => void;
 }
@@ -22,7 +25,7 @@ interface GoalDeleteDialogProps {
 export function GoalDeleteDialog({
 	open,
 	onOpenChange,
-	goalName,
+	goal,
 	pending = false,
 	onConfirm,
 }: GoalDeleteDialogProps) {
@@ -30,11 +33,18 @@ export function GoalDeleteDialog({
 		<AlertDialog open={open} onOpenChange={onOpenChange}>
 			<AlertDialogContent>
 				<AlertDialogHeader>
-					<AlertDialogTitle>Delete goal?</AlertDialogTitle>
-					<AlertDialogDescription>
-						Remove &ldquo;{goalName}&rdquo; and its history. Can’t undo.
-					</AlertDialogDescription>
+					<AlertDialogTitle>Delete Goal?</AlertDialogTitle>
 				</AlertDialogHeader>
+				<AlertDialogDescription asChild>
+					<ConfirmCopy
+						lead={
+							<>
+								Delete <ConfirmHighlight>{goal?.name ?? 'this goal'}</ConfirmHighlight>?
+							</>
+						}
+						body="This cannot be undone. Remaining money moves to Spendable."
+					/>
+				</AlertDialogDescription>
 				<AlertDialogFooter>
 					<AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
 					<AlertDialogAction

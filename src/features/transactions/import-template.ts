@@ -7,7 +7,7 @@ export const IMPORT_TEMPLATE_HEADERS = [
 	'subcategory (optional)',
 	'amount',
 	'currency (optional)',
-	'description (optional)',
+	'note (optional)',
 ] as const;
 
 export const IMPORT_TEMPLATE_SAMPLE_ROWS = [
