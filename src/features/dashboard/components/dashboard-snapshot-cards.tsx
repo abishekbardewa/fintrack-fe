@@ -104,10 +104,10 @@ export function DashboardSnapshotCards({
 		},
 		{
 			key: 'net',
-			label: 'Net',
-			amount: summary.net,
+			label: 'Net Cash Flow',
+			amount: summary.periodNet ?? summary.net,
 			delta: summary.vsPrevious.netPct,
-			tone: summary.net >= 0 ? 'text-income' : 'text-expense',
+			tone: (summary.periodNet ?? summary.net) >= 0 ? 'text-income' : 'text-expense',
 			icon: Activity,
 			iconClass: 'text-primary/10',
 			surface: 'bg-muted',

@@ -10,6 +10,7 @@ export interface Transaction {
 	subcategoryId?: string | null;
 	description?: string | null;
 	date: string;
+	fundedFromGoalId?: string | null;
 	createdAt?: string;
 	updatedAt?: string;
 }
@@ -111,12 +112,24 @@ export interface TransactionMonthSummaryDay {
 	count: number;
 }
 
+export type TransactionMonthBudgetStatus = 'ok' | 'warning' | 'over';
+
+export interface TransactionMonthSummaryBudget {
+	id: string;
+	limit: number;
+	spent: number;
+	remaining: number;
+	percent: number;
+	status: TransactionMonthBudgetStatus;
+}
+
 export interface TransactionMonthSummaryData {
 	year: number;
 	month: number;
 	currency: string;
 	monthTotals: TransactionMonthSummaryTotals;
 	days: TransactionMonthSummaryDay[];
+	budget: TransactionMonthSummaryBudget | null;
 }
 
 export interface TransactionMonthSummaryParams {

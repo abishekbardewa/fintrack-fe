@@ -8,16 +8,22 @@ import { ErrorState } from '@/components/common/error-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { selectUser } from '@/features/auth/authSlice';
+import { GoalCancelDialog } from '@/features/goals/components/goal-cancel-dialog';
 import { GoalContributeDialog } from '@/features/goals/components/goal-contribute-dialog';
-import { GoalContributionsDialog } from '@/features/goals/components/goal-contributions-dialog';
 import { GoalDeleteDialog } from '@/features/goals/components/goal-delete-dialog';
 import { GoalFormDialog } from '@/features/goals/components/goal-form-dialog';
+import { GoalIncreaseTargetDialog } from '@/features/goals/components/goal-increase-target-dialog';
 import { GoalList } from '@/features/goals/components/goal-list';
+import { GoalMoneyBadge } from '@/features/goals/components/goal-money-badge';
+import { GoalReturnDialog } from '@/features/goals/components/goal-return-dialog';
+import { GoalSpendDialog } from '@/features/goals/components/goal-spend-dialog';
 import {
 	useAddContributionMutation,
 	useCreateGoalMutation,
 	useDeleteGoalMutation,
 	useGoalsQuery,
+	useReturnToAvailableMutation,
+	useSpendFromGoalMutation,
 	useUpdateGoalMutation,
 } from '@/features/goals/hooks/use-goals';
 import type {
@@ -25,7 +31,7 @@ import type {
 	SavingsGoal,
 	SavingsGoalStatus,
 } from '@/features/goals/types';
-import { MAX_ACTIVE_SAVINGS_GOALS } from '@/features/goals/types';
+import { formatMoney, hasMovableBalance } from '@/features/goals/utils';
 import { getErrorMessage } from '@/lib/api/errors';
 import { DEFAULT_CURRENCY } from '@/lib/currencies';
 import { cn } from '@/lib/utils';
@@ -43,23 +49,27 @@ export function GoalsPage() {
 	const [statusFilter, setStatusFilter] = useState<SavingsGoalStatus>('active');
 
 	const { data, isLoading, isError, refetch } = useGoalsQuery(statusFilter);
-	const { data: activeData } = useGoalsQuery('active');
 	const createMutation = useCreateGoalMutation();
 	const updateMutation = useUpdateGoalMutation();
 	const deleteMutation = useDeleteGoalMutation();
 	const contributeMutation = useAddContributionMutation();
+	const spendMutation = useSpendFromGoalMutation();
+	const returnMutation = useReturnToAvailableMutation();
 
 	const [formOpen, setFormOpen] = useState(false);
 	const [editing, setEditing] = useState<SavingsGoal | null>(null);
 	const [contributing, setContributing] = useState<SavingsGoal | null>(null);
-	const [historyGoal, setHistoryGoal] = useState<SavingsGoal | null>(null);
+	const [spending, setSpending] = useState<SavingsGoal | null>(null);
+	const [returning, setReturning] = useState<SavingsGoal | null>(null);
+	const [cancelling, setCancelling] = useState<SavingsGoal | null>(null);
+	const [increasingTarget, setIncreasingTarget] = useState<SavingsGoal | null>(null);
 	const [deleting, setDeleting] = useState<SavingsGoal | null>(null);
 
 	const goals = data?.goals ?? [];
-	const activeCount = activeData?.goals.length ?? 0;
-	const atActiveCap = activeCount >= MAX_ACTIVE_SAVINGS_GOALS;
+	const available = data?.money?.spendable ?? data?.money?.available;
 
-	const formPending = createMutation.isPending || updateMutation.isPending;
+	const formPending =
+		createMutation.isPending || (updateMutation.isPending && increasingTarget == null);
 
 	const openCreate = () => {
 		setEditing(null);
@@ -103,34 +113,82 @@ export function GoalsPage() {
 		}
 	};
 
-	const handleContribute = async (payload: {
-		amount: number;
-		currency: string;
-		date: string;
-		note?: string;
-	}) => {
+	const handleContribute = async (payload: { amount: number; note?: string }) => {
 		if (!contributing) return;
 		try {
 			await contributeMutation.mutateAsync({
 				goalId: contributing.id,
 				payload,
 			});
-			toast.success('Contribution added');
+			toast.success('Money added');
 			setContributing(null);
 		} catch (error) {
-			toast.error(getErrorMessage(error, 'Could not add contribution.'));
+			toast.error(getErrorMessage(error, 'Could not add money.'));
 		}
 	};
 
-	const handleCancelGoal = async (goal: SavingsGoal) => {
+	const handleSpend = async (payload: {
+		amount: number;
+		currency: string;
+		categoryId: string;
+		subcategoryId?: string;
+		description?: string;
+		date: string;
+	}) => {
+		if (!spending) return;
 		try {
-			await updateMutation.mutateAsync({
-				id: goal.id,
-				payload: { status: 'cancelled' },
+			await spendMutation.mutateAsync({ goalId: spending.id, payload });
+			toast.success('Expense saved');
+			setSpending(null);
+		} catch (error) {
+			toast.error(getErrorMessage(error, 'Could not save expense.'));
+		}
+	};
+
+	const openReturn = (goal: SavingsGoal) => {
+		if (!hasMovableBalance(goal)) {
+			toast.error('Nothing to move. This goal has no balance.');
+			return;
+		}
+		setReturning(goal);
+	};
+
+	const handleReturn = async (payload: { amount?: number }) => {
+		if (!returning) return;
+		try {
+			await returnMutation.mutateAsync({ goalId: returning.id, payload });
+			toast.success('Money moved');
+			setReturning(null);
+		} catch (error) {
+			toast.error(getErrorMessage(error, 'Could not move money.'));
+		}
+	};
+
+	const handleCancelGoal = async () => {
+		if (!cancelling) return;
+		try {
+			await returnMutation.mutateAsync({
+				goalId: cancelling.id,
+				payload: { cancel: true },
 			});
 			toast.success('Goal cancelled');
+			setCancelling(null);
 		} catch (error) {
 			toast.error(getErrorMessage(error, 'Could not cancel goal.'));
+		}
+	};
+
+	const handleIncreaseTarget = async (targetAmount: number) => {
+		if (!increasingTarget) return;
+		try {
+			await updateMutation.mutateAsync({
+				id: increasingTarget.id,
+				payload: { targetAmount },
+			});
+			toast.success('Target increased');
+			setIncreasingTarget(null);
+		} catch (error) {
+			toast.error(getErrorMessage(error, 'Could not increase target.'));
 		}
 	};
 
@@ -165,7 +223,7 @@ export function GoalsPage() {
 				<div>
 					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Goals</h1>
 					<p className="mt-1 text-sm text-muted-foreground">
-						Turn wishes into progress you can see.
+						Save money for the things that matter.
 					</p>
 				</div>
 				{showChromeSkeleton ? (
@@ -174,7 +232,6 @@ export function GoalsPage() {
 					<Button
 						type="button"
 						onClick={openCreate}
-						disabled={atActiveCap}
 						data-testid="goal-add"
 					>
 						<Plus className="size-4" />
@@ -183,11 +240,13 @@ export function GoalsPage() {
 				)}
 			</header>
 
-			{!showChromeSkeleton && atActiveCap ? (
-				<p className="text-sm text-muted-foreground">
-					You&apos;ve reached the limit of {MAX_ACTIVE_SAVINGS_GOALS} active goals. Complete or
-					cancel one to add another.
-				</p>
+			{!showChromeSkeleton && typeof available === 'number' ? (
+				<GoalMoneyBadge
+					label="Spendable Money"
+					value={formatMoney(available, preferredCurrency)}
+					tone="available"
+					amount={available}
+				/>
 			) : null}
 
 			{showChromeSkeleton ? (
@@ -254,7 +313,7 @@ export function GoalsPage() {
 							: 'Try another status.'
 					}
 					action={
-						statusFilter === 'active' && !atActiveCap ? (
+						statusFilter === 'active' ? (
 							<Button type="button" onClick={openCreate}>
 								<Plus className="size-4" />
 								New Goal
@@ -269,9 +328,11 @@ export function GoalsPage() {
 					goals={goals}
 					preferredCurrency={preferredCurrency}
 					onContribute={setContributing}
+					onSpend={setSpending}
+					onReturn={openReturn}
+					onCancelGoal={setCancelling}
+					onIncreaseTarget={setIncreasingTarget}
 					onEdit={openEdit}
-					onHistory={setHistoryGoal}
-					onCancel={(g) => void handleCancelGoal(g)}
 					onReactivate={(g) => void handleReactivate(g)}
 					onDelete={setDeleting}
 				/>
@@ -284,7 +345,6 @@ export function GoalsPage() {
 					if (!open) setEditing(null);
 				}}
 				goal={editing}
-				preferredCurrency={preferredCurrency}
 				pending={formPending}
 				onSubmit={handleFormSubmit}
 			/>
@@ -295,18 +355,53 @@ export function GoalsPage() {
 					if (!open) setContributing(null);
 				}}
 				goal={contributing}
-				preferredCurrency={preferredCurrency}
+				maxAmount={available}
 				pending={contributeMutation.isPending}
 				onSubmit={handleContribute}
 			/>
 
-			<GoalContributionsDialog
-				open={historyGoal != null}
+			<GoalSpendDialog
+				open={spending != null}
 				onOpenChange={(open) => {
-					if (!open) setHistoryGoal(null);
+					if (!open) setSpending(null);
 				}}
-				goal={historyGoal}
+				goal={spending}
 				preferredCurrency={preferredCurrency}
+				pending={spendMutation.isPending}
+				onSubmit={handleSpend}
+			/>
+
+			<GoalReturnDialog
+				open={returning != null}
+				onOpenChange={(open) => {
+					if (!open) setReturning(null);
+				}}
+				goal={returning}
+				preferredCurrency={preferredCurrency}
+				pending={returnMutation.isPending && cancelling == null}
+				onSubmit={handleReturn}
+			/>
+
+			<GoalCancelDialog
+				open={cancelling != null}
+				onOpenChange={(open) => {
+					if (!open) setCancelling(null);
+				}}
+				goal={cancelling}
+				preferredCurrency={preferredCurrency}
+				pending={returnMutation.isPending && cancelling != null}
+				onConfirm={() => void handleCancelGoal()}
+			/>
+
+			<GoalIncreaseTargetDialog
+				open={increasingTarget != null}
+				onOpenChange={(open) => {
+					if (!open) setIncreasingTarget(null);
+				}}
+				goal={increasingTarget}
+				preferredCurrency={preferredCurrency}
+				pending={updateMutation.isPending && increasingTarget != null}
+				onSubmit={handleIncreaseTarget}
 			/>
 
 			<GoalDeleteDialog
@@ -314,7 +409,8 @@ export function GoalsPage() {
 				onOpenChange={(open) => {
 					if (!open) setDeleting(null);
 				}}
-				goalName={deleting?.name ?? ''}
+				goal={deleting}
+				preferredCurrency={preferredCurrency}
 				pending={deleteMutation.isPending}
 				onConfirm={() => void handleDelete()}
 			/>

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Plus, Receipt, Upload } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { useAppSelector } from '@/app/hooks';
@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { selectUser } from '@/features/auth/authSlice';
 import { useCategoriesQuery } from '@/features/categories/hooks/use-categories';
+import { useGoalsQuery } from '@/features/goals/hooks/use-goals';
 import { TransactionDeleteDialog } from '@/features/transactions/components/transaction-delete-dialog';
 import {
 	TransactionExportDialog,
@@ -39,11 +40,12 @@ import { getErrorMessage } from '@/lib/api/errors';
 import { DEFAULT_CURRENCY } from '@/lib/currencies';
 import { useDebouncedValue } from '@/lib/hooks/use-debounced-value';
 
-const PAGE_LIMIT = 10;
+const PAGE_LIMIT = 20;
 
 export function TransactionsPage() {
 	const user = useAppSelector(selectUser);
 	const preferredCurrency = user?.currency || DEFAULT_CURRENCY;
+	const navigate = useNavigate();
 	const [searchParams, setSearchParams] = useSearchParams();
 	const addRequested = searchParams.get('add') === '1';
 
@@ -74,6 +76,7 @@ export function TransactionsPage() {
 
 	const { data, isLoading, isError, refetch, isFetching } = useTransactionsQuery(listParams);
 	const { data: categoriesData } = useCategoriesQuery();
+	const { data: goalsData } = useGoalsQuery();
 	const deleteMutation = useDeleteTransactionMutation();
 
 	const categoryLabels = useMemo(() => {
@@ -83,6 +86,14 @@ export function TransactionsPage() {
 		}
 		return map;
 	}, [categoriesData?.categories]);
+
+	const goalNames = useMemo(() => {
+		const map = new Map<string, string>();
+		for (const goal of goalsData?.goals ?? []) {
+			map.set(goal.id, goal.name);
+		}
+		return map;
+	}, [goalsData?.goals]);
 
 	const filtersActive = hasActiveFilters(filters);
 
@@ -115,8 +126,16 @@ export function TransactionsPage() {
 	};
 
 	const openEdit = (tx: Transaction) => {
+		if (tx.fundedFromGoalId) return;
 		setEditing(tx);
 		setManualFormOpen(true);
+	};
+
+	const handleManageFromGoal = (tx: Transaction) => {
+		if (!tx.fundedFromGoalId) return;
+		navigate(
+			`/goals/${encodeURIComponent(tx.fundedFromGoalId)}?transaction=${encodeURIComponent(tx.id)}`,
+		);
 	};
 
 	const handleDelete = async () => {
@@ -137,10 +156,15 @@ export function TransactionsPage() {
 	const pageNum = data?.page ?? page;
 	const showChromeSkeleton = isLoading && !data;
 
-	const deleteLabel =
-		deleting?.description?.trim() ||
-		(deleting ? categoryLabels.get(deleting.categoryId) ?? 'this transaction' : '');
-
+	const deleteCategoryName = deleting
+		? (categoryLabels.get(deleting.categoryId) ?? 'Category')
+		: '';
+	const deleteSubcategoryName = deleting?.subcategoryId
+		? categoryLabels.get(deleting.subcategoryId)
+		: undefined;
+	const deleteGoalName = deleting?.fundedFromGoalId
+		? goalNames.get(deleting.fundedFromGoalId)
+		: undefined;
 	return (
 		<div className="flex flex-col gap-6">
 			<header className="flex flex-wrap items-start justify-between gap-4">
@@ -243,9 +267,11 @@ export function TransactionsPage() {
 								<TransactionList
 									items={items}
 									categoryLabels={categoryLabels}
+									goalNames={goalNames}
 									preferredCurrency={preferredCurrency}
 									onEdit={openEdit}
 									onDelete={setDeleting}
+									onManageFromGoal={handleManageFromGoal}
 								/>
 
 								<NumberedPagination
@@ -279,7 +305,11 @@ export function TransactionsPage() {
 				onOpenChange={(open) => {
 					if (!open) setDeleting(null);
 				}}
-				label={deleteLabel}
+				transaction={deleting}
+				categoryName={deleteCategoryName}
+				subcategoryName={deleteSubcategoryName}
+				goalName={deleteGoalName}
+				preferredCurrency={preferredCurrency}
 				pending={deleteMutation.isPending}
 				onConfirm={() => void handleDelete()}
 			/>

@@ -101,6 +101,8 @@ export function CategoryKindPanel({ kind }: CategoryKindPanelProps) {
 		}
 	};
 
+	const deleteIsSub = deleteTarget?.parentCategoryId != null;
+
 	return (
 		<section className="space-y-3" data-testid={`categories-section-${kind}`}>
 			{isLoading ? (
@@ -155,6 +157,7 @@ export function CategoryKindPanel({ kind }: CategoryKindPanelProps) {
 					if (!open) setDeleteTarget(null);
 				}}
 				categoryName={deleteTarget?.name ?? ''}
+				isSub={deleteIsSub}
 				pending={deleteMutation.isPending}
 				onConfirm={() => {
 					void handleDelete();

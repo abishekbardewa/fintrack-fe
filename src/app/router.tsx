@@ -13,6 +13,13 @@ import { RegisterPage } from '@/features/auth/pages/register-page';
 import { ExchangeRatesPage } from '@/features/admin-exchange-rates/pages/exchange-rates-page';
 import { CategoriesPage } from '@/features/categories/pages/categories-page';
 import { GoalsPage } from '@/features/goals/pages/goals-page';
+import { GoalHistoryPage } from '@/features/goals/pages/goal-history-page';
+import { SavingsPage } from '@/features/savings/pages/savings-page';
+import { SavingHistoryPage } from '@/features/savings/pages/saving-history-page';
+import { SavingsCirclesPage } from '@/features/savings-circles/pages/savings-circles-page';
+import { SavingsCircleHistoryPage } from '@/features/savings-circles/pages/savings-circle-history-page';
+import { InvestmentsPage } from '@/features/investments/pages/investments-page';
+import { InvestmentHistoryPage } from '@/features/investments/pages/investment-history-page';
 import { BudgetsPage } from '@/features/budgets/pages/budgets-page';
 import { ChangePasswordPage } from '@/features/settings/pages/change-password-page';
 import { ProfilePage } from '@/features/settings/pages/profile-page';
@@ -48,6 +55,13 @@ const router = createBrowserRouter([
 							{ path: '/transactions', element: <TransactionsPage /> },
 							{ path: '/budgets', element: <BudgetsPage /> },
 							{ path: '/goals', element: <GoalsPage /> },
+							{ path: '/goals/:goalId', element: <GoalHistoryPage /> },
+							{ path: '/savings', element: <SavingsPage /> },
+							{ path: '/savings/:savingId', element: <SavingHistoryPage /> },
+							{ path: '/circles', element: <SavingsCirclesPage /> },
+							{ path: '/circles/:circleId', element: <SavingsCircleHistoryPage /> },
+							{ path: '/investments', element: <InvestmentsPage /> },
+							{ path: '/investments/:investmentId', element: <InvestmentHistoryPage /> },
 							{ path: '/categories', element: <CategoriesPage /> },
 							{ path: '/trends', element: <TrendsPage /> },
 							{ path: '/reviews', element: <ReviewsPage /> },

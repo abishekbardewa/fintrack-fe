@@ -1,4 +1,7 @@
+import { Link } from 'react-router-dom';
 import {
+	ArrowLeftRight,
+	Ban,
 	History,
 	MoreHorizontal,
 	Pencil,
@@ -6,7 +9,7 @@ import {
 	RotateCcw,
 	Target,
 	Trash2,
-	XCircle,
+	Wallet,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +22,7 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SavingsGoal, SavingsGoalStatus } from '@/features/goals/types';
 import {
 	displayCurrent,
@@ -33,9 +37,11 @@ interface GoalListProps {
 	goals: SavingsGoal[];
 	preferredCurrency: string;
 	onContribute: (goal: SavingsGoal) => void;
+	onSpend: (goal: SavingsGoal) => void;
+	onReturn: (goal: SavingsGoal) => void;
+	onCancelGoal: (goal: SavingsGoal) => void;
+	onIncreaseTarget: (goal: SavingsGoal) => void;
 	onEdit: (goal: SavingsGoal) => void;
-	onHistory: (goal: SavingsGoal) => void;
-	onCancel: (goal: SavingsGoal) => void;
 	onReactivate: (goal: SavingsGoal) => void;
 	onDelete: (goal: SavingsGoal) => void;
 }
@@ -50,9 +56,11 @@ export function GoalList({
 	goals,
 	preferredCurrency,
 	onContribute,
+	onSpend,
+	onReturn,
+	onCancelGoal,
+	onIncreaseTarget,
 	onEdit,
-	onHistory,
-	onCancel,
 	onReactivate,
 	onDelete,
 }: GoalListProps) {
@@ -71,9 +79,11 @@ export function GoalList({
 					goal={goal}
 					preferredCurrency={preferredCurrency}
 					onContribute={() => onContribute(goal)}
+					onSpend={() => onSpend(goal)}
+					onReturn={() => onReturn(goal)}
+					onCancelGoal={() => onCancelGoal(goal)}
+					onIncreaseTarget={() => onIncreaseTarget(goal)}
 					onEdit={() => onEdit(goal)}
-					onHistory={() => onHistory(goal)}
-					onCancel={() => onCancel(goal)}
 					onReactivate={() => onReactivate(goal)}
 					onDelete={() => onDelete(goal)}
 				/>
@@ -86,9 +96,11 @@ interface GoalCardProps {
 	goal: SavingsGoal;
 	preferredCurrency: string;
 	onContribute: () => void;
+	onSpend: () => void;
+	onReturn: () => void;
+	onCancelGoal: () => void;
+	onIncreaseTarget: () => void;
 	onEdit: () => void;
-	onHistory: () => void;
-	onCancel: () => void;
 	onReactivate: () => void;
 	onDelete: () => void;
 }
@@ -97,15 +109,18 @@ function GoalCard({
 	goal,
 	preferredCurrency,
 	onContribute,
+	onSpend,
+	onReturn,
+	onCancelGoal,
+	onIncreaseTarget,
 	onEdit,
-	onHistory,
-	onCancel,
 	onReactivate,
 	onDelete,
 }: GoalCardProps) {
 	const percent = Math.min(100, Math.max(0, goal.percent));
-	const canContribute = goal.status === 'active' || goal.status === 'completed';
 	const isActive = goal.status === 'active';
+	const isCompleted = goal.status === 'completed';
+	const canMoveMoney = isActive || isCompleted;
 
 	return (
 		<article
@@ -133,20 +148,27 @@ function GoalCard({
 					</p>
 				</div>
 				<div className="flex shrink-0 items-center gap-0.5">
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						aria-label="Contribution history"
-						onClick={onHistory}
-						data-testid={`goal-history-${goal.id}`}
-					>
-						<History />
-					</Button>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								variant="ghost"
+								size="icon-sm"
+								asChild
+								data-testid={`goal-history-${goal.id}`}
+							>
+								<Link to={`/goals/${goal.id}`} aria-label="View history">
+									<History />
+								</Link>
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent sideOffset={6}>View history</TooltipContent>
+					</Tooltip>
 					<GoalActions
+						goalId={goal.id}
 						status={goal.status}
 						onEdit={onEdit}
-						onCancel={onCancel}
+						onReturn={onReturn}
+						onCancelGoal={onCancelGoal}
 						onReactivate={onReactivate}
 						onDelete={onDelete}
 					/>
@@ -158,17 +180,23 @@ function GoalCard({
 					<span className="text-4xl font-bold tracking-tight text-foreground tabular-nums">
 						{percent}%
 					</span>
-					<span className="mb-1 text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
-						Saved
-					</span>
 				</div>
 
 				<div className="flex items-baseline justify-between gap-2 text-sm">
-					<span className="font-semibold tabular-nums text-foreground">
-						{displayCurrent(goal, preferredCurrency)}
+					<span
+						className={cn(
+							'font-semibold tabular-nums',
+							(goal.currentAmountPreferred ?? goal.currentAmount) < 0
+								? 'text-expense'
+								: 'text-foreground',
+						)}
+					>
+						{displayCurrent(goal, preferredCurrency)}{' '}
+						<span className="font-normal text-muted-foreground">Goal Balance</span>
 					</span>
 					<span className="text-muted-foreground tabular-nums">
-						of {displayTarget(goal, preferredCurrency)}
+						{displayTarget(goal, preferredCurrency)}{' '}
+						<span className="font-normal">Target</span>
 					</span>
 				</div>
 
@@ -186,20 +214,58 @@ function GoalCard({
 				/>
 
 				<div className="flex justify-end text-xs text-muted-foreground">
-					<span className="tabular-nums">{displayRemaining(goal)} left</span>
+					<span className="tabular-nums">{displayRemaining(goal)} Remaining</span>
 				</div>
 
-				{canContribute ? (
-					<Button
-						type="button"
-						size="sm"
-						className="mt-auto w-full"
-						onClick={onContribute}
-						data-testid={`goal-contribute-${goal.id}`}
+				{isCompleted ? (
+					<div
+						className="rounded-2xl bg-income/10 px-3 py-2.5"
+						data-testid={`goal-reached-${goal.id}`}
 					>
-						<Plus className="size-3.5" />
-						Contribute
-					</Button>
+						<p className="text-sm font-semibold text-foreground">Goal reached!</p>
+						<p className="text-xs text-muted-foreground">
+							You’ve reached your {displayTarget(goal, preferredCurrency)} target.
+						</p>
+					</div>
+				) : null}
+
+				{canMoveMoney ? (
+					<div className="mt-auto grid grid-cols-2 gap-2">
+						{isActive ? (
+							<Button
+								type="button"
+								size="sm"
+								className="w-full"
+								onClick={onContribute}
+								data-testid={`goal-contribute-${goal.id}`}
+							>
+								<Plus className="size-3.5" />
+								Add Money
+							</Button>
+						) : (
+							<Button
+								type="button"
+								size="sm"
+								className="w-full"
+								onClick={onIncreaseTarget}
+								data-testid={`goal-increase-target-${goal.id}`}
+							>
+								<Target className="size-3.5" />
+								Increase Target
+							</Button>
+						)}
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							className="w-full"
+							onClick={onSpend}
+							data-testid={`goal-spend-${goal.id}`}
+						>
+							<Wallet className="size-3.5" />
+							Spend from Goal
+						</Button>
+					</div>
 				) : null}
 			</div>
 		</article>
@@ -207,15 +273,19 @@ function GoalCard({
 }
 
 function GoalActions({
+	goalId,
 	status,
 	onEdit,
-	onCancel,
+	onReturn,
+	onCancelGoal,
 	onReactivate,
 	onDelete,
 }: {
+	goalId: string;
 	status: SavingsGoal['status'];
 	onEdit: () => void;
-	onCancel: () => void;
+	onReturn: () => void;
+	onCancelGoal: () => void;
 	onReactivate: () => void;
 	onDelete: () => void;
 }) {
@@ -232,10 +302,16 @@ function GoalActions({
 					Edit
 				</DropdownMenuItem>
 				{status === 'active' || status === 'completed' ? (
-					<DropdownMenuItem onClick={onCancel}>
-						<XCircle />
-						Mark cancelled
-					</DropdownMenuItem>
+					<>
+						<DropdownMenuItem onClick={onReturn} data-testid={`goal-return-${goalId}`}>
+							<ArrowLeftRight />
+							Move to Spendable
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={onCancelGoal} data-testid={`goal-cancel-${goalId}`}>
+							<Ban className="text-destructive" />
+							Cancel Goal
+						</DropdownMenuItem>
+					</>
 				) : null}
 				{status === 'cancelled' ? (
 					<DropdownMenuItem onClick={onReactivate}>

@@ -20,6 +20,7 @@ coverage/
 !.vscode/extensions.json
 .idea/
 *.iml
+._*
 .DS_Store
 Thumbs.db
 Desktop.ini
@@ -40,8 +41,6 @@ lerna-debug.log*
 
 # Project-local (not for GitHub)
 docs/
-legacy-project/
-designs/
 .cursor/
 *.md
 !README.md

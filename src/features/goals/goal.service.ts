@@ -2,13 +2,20 @@ import { apiPrivate } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/errors';
 import type { ApiResponse } from '@/lib/api/types';
 import type {
+	ContributionListParams,
 	ContributionMutationData,
 	ContributionsListData,
 	CreateContributionRequest,
 	CreateGoalRequest,
 	GoalMutationData,
 	GoalsListData,
+	ReturnToAvailableData,
+	ReturnToAvailableRequest,
 	SavingsGoalStatus,
+	SpendFromGoalData,
+	SpendFromGoalRequest,
+	StartingBalanceRequest,
+	UpdateContributionRequest,
 	UpdateGoalRequest,
 } from '@/features/goals/types';
 
@@ -61,11 +68,23 @@ export async function deleteGoal(id: string) {
 	}
 }
 
-export async function listContributions(goalId: string) {
+export async function listContributions(
+	goalId: string,
+	params: ContributionListParams = {},
+) {
 	const { data } = await apiPrivate.get<ApiResponse<ContributionsListData>>(
 		`${GOALS_BASE}/${goalId}/contributions`,
+		{ params },
 	);
 	return unwrapData(data, 'Failed to load contributions.');
+}
+
+export async function addStartingBalance(goalId: string, payload: StartingBalanceRequest) {
+	const { data } = await apiPrivate.post<ApiResponse<ContributionMutationData>>(
+		`${GOALS_BASE}/${goalId}/starting-balance`,
+		payload,
+	);
+	return unwrapData(data, 'Failed to add starting goal balance.');
 }
 
 export async function addContribution(goalId: string, payload: CreateContributionRequest) {
@@ -81,4 +100,32 @@ export async function deleteContribution(goalId: string, contributionId: string)
 		ApiResponse<{ goal: ContributionMutationData['goal'] }>
 	>(`${GOALS_BASE}/${goalId}/contributions/${contributionId}`);
 	return unwrapData(data, 'Failed to delete contribution.');
+}
+
+export async function updateContribution(
+	goalId: string,
+	contributionId: string,
+	payload: UpdateContributionRequest,
+) {
+	const { data } = await apiPrivate.patch<ApiResponse<ContributionMutationData>>(
+		`${GOALS_BASE}/${goalId}/contributions/${contributionId}`,
+		payload,
+	);
+	return unwrapData(data, 'Failed to update contribution.');
+}
+
+export async function spendFromGoal(goalId: string, payload: SpendFromGoalRequest) {
+	const { data } = await apiPrivate.post<ApiResponse<SpendFromGoalData>>(
+		`${GOALS_BASE}/${goalId}/spend`,
+		payload,
+	);
+	return unwrapData(data, 'Failed to spend from goal.');
+}
+
+export async function returnToAvailable(goalId: string, payload: ReturnToAvailableRequest = {}) {
+	const { data } = await apiPrivate.post<ApiResponse<ReturnToAvailableData>>(
+		`${GOALS_BASE}/${goalId}/return`,
+		payload,
+	);
+	return unwrapData(data, 'Failed to return goal funds.');
 }

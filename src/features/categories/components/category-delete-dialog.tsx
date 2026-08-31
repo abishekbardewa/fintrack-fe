@@ -1,5 +1,6 @@
 import { Loader2 } from 'lucide-react';
 
+import { ConfirmCopy, ConfirmHighlight } from '@/components/common/confirm-delete-details';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -15,6 +16,7 @@ interface CategoryDeleteDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	categoryName: string;
+	isSub?: boolean;
 	pending?: boolean;
 	onConfirm: () => void;
 }
@@ -23,6 +25,7 @@ export function CategoryDeleteDialog({
 	open,
 	onOpenChange,
 	categoryName,
+	isSub = false,
 	pending = false,
 	onConfirm,
 }: CategoryDeleteDialogProps) {
@@ -30,11 +33,24 @@ export function CategoryDeleteDialog({
 		<AlertDialog open={open} onOpenChange={onOpenChange}>
 			<AlertDialogContent>
 				<AlertDialogHeader>
-					<AlertDialogTitle>Delete category?</AlertDialogTitle>
-					<AlertDialogDescription>
-						Remove &ldquo;{categoryName}&rdquo;. Can’t undo.
-					</AlertDialogDescription>
+					<AlertDialogTitle>
+						{isSub ? 'Delete subcategory?' : 'Delete category?'}
+					</AlertDialogTitle>
 				</AlertDialogHeader>
+				<AlertDialogDescription asChild>
+					<ConfirmCopy
+						lead={
+							<>
+								Are you sure you want to delete <ConfirmHighlight>{categoryName}</ConfirmHighlight>?
+							</>
+						}
+						body={
+							isSub
+								? 'The subcategory will be permanently deleted. Existing transactions will not be deleted.'
+								: 'The category will be permanently deleted. This is only possible if it has no transactions or subcategories.'
+						}
+					/>
+				</AlertDialogDescription>
 				<AlertDialogFooter>
 					<AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
 					<AlertDialogAction

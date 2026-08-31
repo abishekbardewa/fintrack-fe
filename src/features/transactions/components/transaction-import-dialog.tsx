@@ -318,7 +318,7 @@ export function TransactionImportDialog({
 										<th className="px-2 py-2 font-medium">Subcategory</th>
 										<th className="px-2 py-2 font-medium">Amount</th>
 										<th className="px-2 py-2 font-medium">Currency</th>
-										<th className="px-2 py-2 font-medium">Description</th>
+										<th className="px-2 py-2 font-medium">Note</th>
 									</tr>
 								</thead>
 								<tbody>

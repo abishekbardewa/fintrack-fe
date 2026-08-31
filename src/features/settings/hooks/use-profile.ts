@@ -3,6 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAppDispatch } from '@/app/hooks';
 import { setUser } from '@/features/auth/authSlice';
 import { dashboardKeys } from '@/features/dashboard/hooks/use-dashboard';
+import { goalKeys } from '@/features/goals/hooks/use-goals';
+import { investmentKeys } from '@/features/investments/hooks/use-investments';
+import { savingKeys } from '@/features/savings/hooks/use-savings';
 import {
 	changePassword,
 	getMe,
@@ -40,6 +43,10 @@ export function useUpdateMeMutation() {
 			dispatch(setUser(data.user));
 			queryClient.setQueryData(profileKeys.me(), data);
 			void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+			void queryClient.invalidateQueries({ queryKey: goalKeys.all });
+			void queryClient.invalidateQueries({ queryKey: savingKeys.all });
+			void queryClient.invalidateQueries({ queryKey: ['savings-circles'] });
+			void queryClient.invalidateQueries({ queryKey: investmentKeys.all });
 			void queryClient.invalidateQueries({ queryKey: trendsKeys.all });
 		},
 	});
